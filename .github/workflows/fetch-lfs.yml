@@ -1,0 +1,41 @@
+name: Fetch original images (migration, one-shot)
+
+# Проверка и получение оригиналов иллюстраций из Git LFS силами GitHub Actions.
+# Локальная песочница не имеет доступа к github-cloud.githubusercontent.com,
+# поэтому реальные байты изображений проверяются и сохраняются здесь.
+on:
+  push:
+    branches:
+      - arena/47e5cade-glossary
+    paths:
+      - '.github/workflows/fetch-lfs.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout with LFS
+        uses: actions/checkout@v4
+        with:
+          ref: arena/47e5cade-glossary
+          lfs: true
+
+      - name: Verify real image bytes
+        run: python3 migration/tools/verify_media.py
+
+      - name: Commit media report
+        run: |
+          git config user.name "glossary-media"
+          git config user.email "glossary-media@users.noreply.github.com"
+          git add -A migration/build/media_report.json
+          if git diff --cached --quiet; then
+            echo "Нет изменений"
+            exit 0
+          fi
+          git commit -m "Зафиксировать проверку оригиналов иллюстраций [skip ci]"
+          git push origin HEAD:arena/47e5cade-glossary
