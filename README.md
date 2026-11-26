@@ -95,4 +95,4 @@ order: 1000
 
 `.github/workflows/build-check.yml` проверяет pull request в `main`. После push в `main` workflow `.github/workflows/deploy-pages.yml` собирает сайт, выполняет проверки, загружает только `_site/` как Pages artifact и проверяет опубликованные HTTPS-адреса. Workflow также поддерживает ручной запуск.
 
-В настройках репозитория источник GitHub Pages — GitHub Actions, пользовательский домен — `glossary.ufacsdb.ru`. В `site/_config.yml` заданы `url: "https://glossary.ufacsdb.ru"` и пустой `baseurl`: сайт работает из корня домена. Проверка в workflow использует адрес, возвращённый GitHub Pages при публикации. `_site/` не коммитится.
+В настройках репозитория источник GitHub Pages — GitHub Actions, пользовательский домен — `glossary.ufacsdb.ru`. В `site/_config.yml` заданы `url: "https://glossary.ufacsdb.ru"` и пустой `baseurl`: сайт работает из корня домена. Проверка в workflow использует адрес, возвращённый GitHub Pages при публикации, с принудительным HTTPS. `_site/` не коммитится.
