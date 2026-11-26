@@ -28,6 +28,20 @@ jobs:
         with:
           ref: arena/47e5cade-glossary
 
+      - name: Install parser
+        run: python3 -m pip install --quiet beautifulsoup4 requests
+
+      - name: Probe source site
+        run: |
+          python3 - <<'PY'
+          import requests
+          r = requests.get("https://glossary.ufacsdb.ru/", timeout=30,
+                           headers={"User-Agent": "glossary-migration/1.0"})
+          print("status", r.status_code, "bytes", len(r.content))
+          r.encoding = r.apparent_encoding or "utf-8"
+          print(r.text[:400])
+          PY
+
       - name: Crawl glossary.ufacsdb.ru
         run: python3 migration/tools/harvest.py
 
