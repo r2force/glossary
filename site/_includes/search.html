@@ -1,0 +1,7 @@
+<dialog class="search-dialog" aria-labelledby="search-title" data-search-index="{{ '/assets/search.json' | relative_url }}">
+  <div class="search-heading"><h2 id="search-title">Поиск по глоссарию</h2><button type="button" data-close-search aria-label="Закрыть поиск">×</button></div>
+  <label for="search-input">Название или описание выставки</label>
+  <input id="search-input" type="search" placeholder="Начните вводить название…" autocomplete="off">
+  <p class="search-status" role="status"></p>
+  <ul class="search-results"></ul>
+</dialog>

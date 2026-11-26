@@ -3,8 +3,9 @@ layout: default
 ---
 {% assign group = site.exhibitions | where: "letter", page.letter | sort: "order" %}
 {% include breadcrumbs.html index=true %}
-<h1>{{ page.title | escape }}</h1>
-<p class="lead">Выставок в разделе: {{ group.size }}. Полные описания — на отдельных страницах.</p>
+<div class="section-banner"><span class="section-monogram">{{ page.letter }}</span><div><div class="catalog-meta">Глоссарий книжных выставок</div><h1>{{ page.title | escape }}</h1>
+<p class="lead">Выставок в разделе: <strong>{{ group.size }}</strong>. Полные описания — на отдельных страницах.</p></div></div>
 {{ content }}
 {% include letter-nav.html %}
+<h2 class="cards-heading">Карточки выставок на букву «{{ page.letter }}»</h2>
 {% include cards.html items=group %}

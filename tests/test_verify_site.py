@@ -81,7 +81,7 @@ class SiteVerificationTests(unittest.TestCase):
         canonical = 'https://example.test/glossary' + url
         nav = '<nav class="main">' + ''.join(f'<a href="/glossary{item["url"]}"' + (' aria-current="page"' if item['url'] == url else '') + f'>{item["title"]}</a>' for item in self.nav) + '</nav>'
         alpha = ''
-        if path in ('index.html', 'contents/index.html', 'sections/a/index.html'):
+        if path in ('contents/index.html', 'sections/a/index.html'):
             alpha = '<ul class="letter-nav"><li><a href="/glossary/sections/a/"' + (' aria-current="page"' if path == 'sections/a/index.html' else '') + '>А</a></li><li><span class="off">Б</span></li></ul>'
         heading = '' if '<h1>' in body else f'<h1>{title}</h1>'
         links = ''.join(f'<a href="/glossary{verifier.canonical_path(p)}">Open</a>' for p in self.pages if p != '404.html')
@@ -245,6 +245,21 @@ class SiteVerificationTests(unittest.TestCase):
         p = self.built / 'index.html'
         p.write_text(p.read_text().replace('</main>', '<a href="javascript:alert(1)">bad</a></main>'))
         self.assert_error('запрещённая схема')
+
+    def test_local_deferred_site_script_passes(self):
+        self.write(self.built, 'assets/site.js', "'use strict';")
+        p = self.built / 'index.html'
+        p.write_text(p.read_text().replace('</body>', '<script src="/glossary/assets/site.js" defer></script></body>'))
+        self.assertEqual([], self.errors())
+
+    def test_inline_and_external_scripts_are_rejected(self):
+        p = self.built / 'index.html'
+        original = p.read_text()
+        for script in ('<script>alert(1)</script>', '<script src="https://example.test/script.js" defer></script>', '<script src="/glossary/assets/site.js"></script>'):
+            with self.subTest(script=script):
+                p.write_text(original.replace('</body>', script + '</body>'))
+                self.assert_error('разрешён только локальный assets/site.js с defer')
+        p.write_text(original)
 
     def test_repeat_accepts_identical_output(self):
         report = self.root / 'report.json'

@@ -1,0 +1,9 @@
+---
+layout: null
+---
+[
+{%- assign search_items = site.exhibitions | sort: 'order' -%}
+{%- for item in search_items -%}
+  {"title":{{ item.title | jsonify }},"letter":{{ item.letter | jsonify }},"url":{{ item.url | relative_url | jsonify }},"text":{{ item.content | strip_html | normalize_whitespace | jsonify }}}{% unless forloop.last %},{% endunless %}
+{%- endfor -%}
+]

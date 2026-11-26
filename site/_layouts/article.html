@@ -1,8 +1,11 @@
 ---
 layout: default
 ---
-{% include breadcrumbs.html %}
-<article>
+{% unless page.url == '/conclusion/' %}{% include breadcrumbs.html %}{% endunless %}
+<article class="article-card{% if page.url == '/conclusion/' %} conclusion{% endif %}">
+  {% if page.url == '/conclusion/' %}<div class="article-eyebrow">Заключение · Коллектив авторов ЦСДБ ГО г. Уфа</div>{% endif %}
   <h1>{{ page.title | escape }}</h1>
+  <div data-article-content>
 {{ content }}
+  </div>
 </article>

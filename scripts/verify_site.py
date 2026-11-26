@@ -234,7 +234,8 @@ def verify(source, built):
             if tag.name in LEGACY_TAGS or ':' in tag.name:
                 errors.append(f'{page}: устаревший тег {tag.name}')
             for attr in tag.attrs:
-                if attr.lower() in LEGACY_ATTRS or attr.lower().startswith(('on', 'mso-')):
+                svg_dimension = attr.lower() in ('width', 'height') and (tag.name == 'svg' or tag.find_parent('svg'))
+                if (attr.lower() in LEGACY_ATTRS and not svg_dimension) or attr.lower().startswith(('on', 'mso-')):
                     errors.append(f'{page}: запрещённый атрибут {attr}')
         if WORD.search(raw) or soup.find('style'):
             errors.append(f'{page}: разметка оформления Word/Joomla')
@@ -260,8 +261,9 @@ def verify(source, built):
         for meta in soup.find_all('meta'):
             if (meta.get('name') or '').lower() in ('robots', 'googlebot', 'bingbot') and re.search(r'\b(noindex|none)\b', meta.get('content', ''), re.I):
                 errors.append(f'{page}: запрещён noindex')
-        if soup.select('script:not([type="application/ld+json"])'):
-            errors.append(f'{page}: исполняемые скрипты запрещены')
+        for script in soup.select('script:not([type="application/ld+json"])'):
+            if script.get('src') != baseurl + '/assets/site.js' or script.get_text().strip() or not script.has_attr('defer') or not exact_file(built, 'assets/site.js'):
+                errors.append(f'{page}: разрешён только локальный assets/site.js с defer')
         headers, footers = soup.select('header.site'), soup.select('footer.site')
         if len(headers) != 1 or len(footers) != 1:
             errors.append(f'{page}: должен быть один header.site и footer.site')
@@ -277,7 +279,7 @@ def verify(source, built):
             header_signatures.add(repr(signature(header_copy)))
             footer_signatures.add(repr(signature(footers[0])))
         alpha = soup.select('ul.letter-nav')
-        requires_alpha = page in ('index.html', 'contents/index.html') or (page in docs and docs[page]['collection'] == 'sections')
+        requires_alpha = page == 'contents/index.html' or (page in docs and docs[page]['collection'] == 'sections')
         if len(alpha) != int(requires_alpha):
             errors.append(f'{page}: неверное число алфавитных указателей')
         if alpha:
@@ -288,9 +290,10 @@ def verify(source, built):
                 link = li.find('a')
                 if letter in active_letters:
                     target = baseurl + canonical_path(active_letters[letter])
-                    if link is None or link.get('href') != target or normalize(link.get_text()) != letter or (link.get('aria-current') == 'page') != (page == active_letters[letter]):
+                    label = link.select_one('.letter-label') if link else None
+                    if link is None or link.get('href') != target or normalize((label or link).get_text()) != letter or (link.get('aria-current') == 'page') != (page == active_letters[letter]):
                         errors.append(f'{page}: неверная ссылка буквы {letter}')
-                elif link or not li.find('span', class_='off') or normalize(li.get_text()) != letter:
+                elif link or not li.find('span', class_='off') or normalize((li.select_one('.letter-label') or li).get_text()) != letter:
                     errors.append(f'{page}: неверная неактивная буква {letter}')
         for node, attr in [(n, 'href') for n in soup.find_all('a')] + [(n, 'src') for n in soup.find_all('img')] + [(n, 'href') for n in soup.select('link[rel="stylesheet"]')]:
             href = node.get(attr) or ''
@@ -344,6 +347,7 @@ def verify(source, built):
                     if article is None:
                         raise ValueError('нет article')
                     actual = BeautifulSoup(str(article), 'html.parser').article
+                    actual = actual.select_one('[data-article-content]') or actual
                     for node in actual.select('h1, nav.pager'):
                         node.decompose()
                     if signature(actual) != expected_events:

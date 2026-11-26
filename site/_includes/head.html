@@ -24,6 +24,9 @@
 <meta property="og:description" content="{{ meta_desc | escape_once }}">
 <meta property="og:url" content="{{ page.url | absolute_url | escape }}">
 <meta property="og:locale" content="ru_RU">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400;1,600&amp;family=JetBrains+Mono:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{{ '/assets/site.css' | relative_url }}">
 {%- if page.collection == "exhibitions" %}
 {%- assign website_name = site.title | append: ": " | append: site.subtitle %}

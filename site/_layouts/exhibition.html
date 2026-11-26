@@ -3,8 +3,13 @@ layout: default
 ---
 {% assign section_doc = site.sections | where: "letter", page.letter | first %}
 {% include breadcrumbs.html index=true section=section_doc %}
-<article>
+<div class="exhibition-page">
+<article class="article-card exhibition">
+  <div class="exhibition-passport"><a class="section-letter" href="{{ section_doc.url | relative_url }}">{{ page.letter }}</a><div><div class="catalog-meta">Каталожная карточка № {{ page.order }}</div></div><button class="cite-button" type="button" data-copy-citation>Цитировать</button></div>
   <h1>{{ page.title | escape }}</h1>
+  <div data-article-content>
 {{ content }}
-  {% include pager.html %}
+  </div>
 </article>
+{% include pager.html %}
+</div>

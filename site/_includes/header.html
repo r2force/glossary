@@ -1,6 +1,13 @@
 <header class="site">
   <div class="wrap">
-    <a class="brand" href="{{ '/' | relative_url }}">{{ site.title | escape }}<span>{{ site.subtitle | escape }}</span></a>
-    {% include nav.html %}
+    <div class="brand-group">
+      <a class="brand-mark" href="{{ '/' | relative_url }}" aria-label="На главную">{% include icon.html name="book" %}<span>УФА</span></a>
+      <a class="brand" href="{{ '/' | relative_url }}">{{ site.title | escape }}<span>{{ site.subtitle | escape }} · ЦГДБ г. Уфы</span></a>
+    </div>
+    <div class="header-tools">
+      {% include nav.html %}
+      <button class="search-trigger" type="button" data-open-search>{% include icon.html name="search" %}<span>Поиск по {{ site.exhibitions.size }} форме…</span><kbd>⌘K</kbd></button>
+      <button class="random-trigger" type="button" data-random-exhibition aria-label="Случайная выставка">{% include icon.html name="shuffle" %}<span>Случайная выставка</span></button>
+    </div>
   </div>
 </header>

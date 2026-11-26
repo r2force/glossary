@@ -1,12 +1,12 @@
 ---
 layout: default
 ---
-<h1>{{ site.title | escape }}</h1>
-<p class="lead">{{ site.subtitle | escape }}</p>
-<h2>Алфавитный указатель</h2>
-{% include letter-nav.html %}
-<h2>Избранные выставки</h2>
-{% assign featured_items = site.exhibitions | where: "featured", true | sort: "order" %}
-{% include cards.html items=featured_items %}
-<h2>О глоссарии</h2>
+<article class="home-introduction hero">
+  <div class="edition-labels"><span class="badge badge-red">{% include icon.html name="library" %} Справочное издание · 2-е переработанное</span><span class="badge">ЦГДБ г. Уфы</span></div>
+  <h1>{{ site.title | escape }}</h1>
+  <p class="lead">{{ site.subtitle | escape }}</p>
+  <a class="button button-primary" href="{{ '/contents/' | relative_url }}">Открыть полный указатель А–Я {% include icon.html name="arrow-right" %}</a>
+  <div class="introduction-copy">
 {{ content }}
+  </div>
+</article>

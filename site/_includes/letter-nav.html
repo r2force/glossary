@@ -1,10 +1,31 @@
-<ul class="letter-nav" aria-label="Алфавитный указатель">
-{%- for letter in site.data.alphabet -%}
-  {%- assign sec = site.sections | where: "letter", letter | first -%}
-  {%- if sec -%}
-  <li><a href="{{ sec.url | relative_url }}"{% if page.collection == "sections" and page.letter == letter %} aria-current="page"{% endif %}>{{ letter }}</a></li>
-  {%- else -%}
-  <li><span class="off">{{ letter }}</span></li>
-  {%- endif -%}
-{%- endfor -%}
-</ul>
+<section class="alphabet-panel" aria-label="Алфавитный указатель от А до Я" data-alphabet data-mode="{% if page.url == '/contents/' %}compact{% else %}matrix{% endif %}">
+  <div class="alphabet-toolbar">
+    <div class="alphabet-heading"><span class="alphabet-symbol">А–Я</span><div><div class="alphabet-title-line"><h2>Интерактивный алфавитный указатель с быстрыми ссылками</h2><span class="badge alphabet-total">{{ site.sections.size }} разделов · {{ site.exhibitions.size }} выставка</span></div><p>Выберите букву, чтобы открыть раздел с описаниями выставок.</p></div></div>
+    <div class="alphabet-controls">
+      <div class="mode-switch" role="group" aria-label="Режим отображения алфавита">
+        <button type="button" data-alphabet-mode="matrix" aria-pressed="{% if page.url == '/contents/' %}false{% else %}true{% endif %}">{% include icon.html name="layers" %} Матрица</button>
+        <button type="button" data-alphabet-mode="magnetic" aria-pressed="false">{% include icon.html name="sparkles" %} Магнитный док</button>
+        <button type="button" data-alphabet-mode="compact" aria-pressed="{% if page.url == '/contents/' %}true{% else %}false{% endif %}">{% include icon.html name="compass" %} Тепловая лента</button>
+      </div>
+      <button class="inactive-toggle" type="button" data-toggle-inactive aria-pressed="false">{% include icon.html name="sliders" %}<span>Все {{ site.data.alphabet.size }} буквы</span></button>
+    </div>
+  </div>
+  <ul class="letter-nav" aria-label="Алфавитный указатель">
+  {%- assign max_count = 1 -%}
+  {%- for section in site.sections -%}
+    {%- assign section_items = site.exhibitions | where: 'letter', section.letter -%}
+    {%- if section_items.size > max_count -%}{%- assign max_count = section_items.size -%}{%- endif -%}
+  {%- endfor -%}
+  {%- for letter in site.data.alphabet -%}
+    {%- assign sec = site.sections | where: 'letter', letter | first -%}
+    {%- assign alphabet_group = site.exhibitions | where: 'letter', letter -%}
+    <li{% unless sec %} class="inactive-letter"{% endunless %}>
+    {%- if sec -%}
+      <a href="{{ sec.url | relative_url }}"{% if page.collection == 'sections' and page.letter == letter %} aria-current="page"{% endif %}><span class="letter-label">{{ letter }}</span><span class="letter-count" aria-hidden="true">{{ alphabet_group.size }}</span><meter class="letter-density" min="0" max="{{ max_count }}" value="{{ alphabet_group.size }}" aria-label="{{ alphabet_group.size }} выставок"></meter>{% if alphabet_group.size >= 15 %}<span class="density-dot" aria-hidden="true"></span>{% endif %}</a>
+    {%- else -%}
+      <span class="off" aria-disabled="true"><span class="letter-label">{{ letter }}</span><span class="letter-count" aria-hidden="true">—</span></span>
+    {%- endif -%}
+    </li>
+  {%- endfor -%}
+  </ul>
+</section>

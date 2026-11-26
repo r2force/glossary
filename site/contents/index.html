@@ -1,18 +1,23 @@
 ---
 layout: default
-title: "Алфавитный указатель"
+title: "Алфавитный указатель от А до Я"
 description: "Алфавитный указатель глоссария: нетрадиционные формы книжных выставок от А до Я."
 ---
-<h1>{{ page.title | escape }}</h1>
-<p class="lead">Всего выставок: {{ site.exhibitions.size }}. Разделов: {{ site.sections.size }}.</p>
+{% include breadcrumbs.html %}
+<div class="index-heading"><h1>{{ page.title | escape }}</h1>
+<p class="lead">Всего выставок: <strong>{{ site.exhibitions.size }}</strong> · Активных разделов: <strong>{{ site.sections.size }}</strong>. Кликните на любую букву для быстрого перехода или выберите термин.</p></div>
 {% include letter-nav.html %}
+<div class="index-grid">
 {%- assign sorted_sections = site.sections | sort: "order" %}
 {%- for sec in sorted_sections %}
   {%- assign group = site.exhibitions | where: "letter", sec.letter | sort: "title" %}
-<h2 id="letter-{{ sec.slug }}"><a href="{{ sec.url | relative_url }}">{{ sec.letter | escape }}</a></h2>
+<section class="index-section" id="letter-{{ sec.slug }}">
+  <div class="index-section-heading"><a class="section-letter" href="{{ sec.url | relative_url }}">{{ sec.letter | escape }}</a><div><h2><a href="{{ sec.url | relative_url }}">{{ sec.title | escape }}</a></h2><p class="catalog-meta">{{ group.size }} форм выставок</p></div><a class="section-open" href="{{ sec.url | relative_url }}">Открыть раздел {% include icon.html name="arrow-right" %}</a></div>
 <ul class="toc">
   {%- for item in group %}
-  <li><a href="{{ item.url | relative_url }}">{{ item.title | escape }}</a></li>
+  <li><a href="{{ item.url | relative_url }}"><span>{{ item.title | escape }}</span><span class="term-marks">{% if item.content contains '<img' %}<span class="photo-badge">{% include icon.html name="camera" %} Фото</span>{% endif %}{% include icon.html name="chevron" %}</span></a></li>
   {%- endfor %}
 </ul>
+</section>
 {%- endfor %}
+</div>
