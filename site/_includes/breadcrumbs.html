@@ -1,0 +1,1 @@
+<nav class="crumbs" aria-label="Хлебные крошки"><a href="{{ '/' | relative_url }}">Главная</a>{% if include.index %} · <a href="{{ '/contents/' | relative_url }}">Указатель</a>{% endif %}{% if include.section %} · <a href="{{ include.section.url | relative_url }}">{{ include.section.title | escape }}</a>{% endif %}</nav>

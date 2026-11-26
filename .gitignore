@@ -5,3 +5,11 @@
 # Сгенерированный байткод Python
 __pycache__/
 *.pyc
+
+# Сборочные артефакты Jekyll
+_site/
+site/_site/
+site/.jekyll-cache/
+site/.sass-cache/
+site/.bundle/
+site/vendor/

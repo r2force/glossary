@@ -1,20 +1,18 @@
 #!/usr/bin/env python3
-"""Сборка статического сайта глоссария в site/.
+"""Экспорт содержательных материалов реестра в коллекции и страницы Jekyll (site/).
 
 Вход:  migration/build/registry.json (см. extract.py), файлы site/images/.
-Выход: site/index.html, site/contents/, site/conclusion/,
-       site/exhibitions/<slug>/, site/sections/<letter>/,
-       site/assets/site.css, site/sitemap.xml, site/robots.txt, site/404.html.
+Выход: содержательные файлы без каркаса оформления:
+       site/_exhibitions/<slug>.html, site/_sections/<letter>.html,
+       site/index.html, site/conclusion/index.html,
+       а также отчёты migration/build/build_report.json и url_map.json.
 
-Общая разметка (шапка, подвал, алфавит, навигация, карточки, стили) вынесена
-в migration/templates/ и migration/tools/site_template.py: правится один раз,
-попадает на все страницы. Ссылки на ресурсы — относительные, чтобы сайт работал
-и по адресу https://r2force.github.io/glossary/, и локально. Повторный запуск
-даёт те же файлы.
+Шаблоны, меню и стили живут непосредственно в site/ (_layouts/, _includes/,
+_data/, assets/site.css) и этим скриптом не перезаписываются — оформление
+и навигация отделены от содержания.
 """
 from __future__ import annotations
 
-import html
 import json
 import os
 import re
@@ -25,26 +23,12 @@ from urllib.parse import quote, unquote
 
 from bs4 import BeautifulSoup, Comment, NavigableString, Tag
 
-from site_template import (
-    BASE_URL,
-    SITE_SUBTITLE,
-    SITE_TITLE,
-    article,
-    breadcrumbs,
-    cards,
-    layout,
-    letter_nav,
-    pager,
-    page_url,
-    stylesheet,
-    url_for,
-)
-
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 REPO = os.path.dirname(ROOT)
 BUILD = os.path.join(ROOT, "build")
 SITE = os.path.join(REPO, "site")
 IMAGES = os.path.join(SITE, "images")
+BASE_URL = os.environ.get("SITE_BASE_URL", "https://r2force.github.io/glossary")
 
 TRANSLIT = {
     "а": "a", "б": "b", "в": "v", "г": "g", "д": "d", "е": "e", "ё": "e",
@@ -54,8 +38,6 @@ TRANSLIT = {
     "ъ": "", "ы": "y", "ь": "", "э": "e", "ю": "yu", "я": "ya",
 }
 
-
-# ---------------------------------------------------------------- утилиты
 
 def translit(value: str) -> str:
     out = []
@@ -69,28 +51,20 @@ def translit(value: str) -> str:
     return re.sub(r"[^a-z0-9]+", "-", "".join(out)).strip("-")
 
 
-def plain(fragment: str) -> str:
-    text = re.sub(r"<[^>]+>", " ", fragment)
-    text = html.unescape(text).replace("\xa0", " ")
-    return re.sub(r"\s+", " ", text).strip()
+def front_matter(**fields: object) -> str:
+    lines = ["---"]
+    for key, value in fields.items():
+        if value is None:
+            continue
+        if isinstance(value, bool):
+            lines.append(f"{key}: {'true' if value else 'false'}")
+        elif isinstance(value, int):
+            lines.append(f"{key}: {value}")
+        else:
+            lines.append(f"{key}: {json.dumps(str(value), ensure_ascii=False)}")
+    lines.append("---")
+    return "\n".join(lines)
 
-
-def short(text: str, limit: int = 200) -> str:
-    text = plain(text)
-    if len(text) <= limit:
-        return text
-    cut = text[:limit]
-    if " " in cut:
-        cut = cut[: cut.rfind(" ")]
-    return cut.rstrip(" ,;:–-") + "…"
-
-
-def meta_description(text: str) -> str:
-    value = short(text, 180)
-    return value if value else SITE_TITLE
-
-
-# ---------------------------------------------------------------- изображения
 
 class Media:
     """Сопоставление исходных адресов изображений с файлами site/images."""
@@ -128,260 +102,6 @@ class Media:
         return None
 
 
-# ---------------------------------------------------------------- сборка
-
-def main() -> int:
-    with open(os.path.join(BUILD, "registry.json"), encoding="utf-8") as fh:
-        registry = json.load(fh)
-
-    media = Media()
-    items = registry["items"]
-    letters = registry["letters"]
-
-    # адреса берём из реестра (их же проверяет verify_site.py)
-    for item in items:
-        item["url"] = page_url(item["path"])
-
-    by_letter: dict[str, list[dict]] = {}
-    for item in items:
-        by_letter.setdefault(item["letter"], []).append(item)
-
-    letter_slug = {l["title"]: translit(l["title"]) for l in letters}
-    letter_path = {
-        l["title"]: f"sections/{letter_slug[l['title']]}/index.html" for l in letters
-    }
-
-    # чистка прежних выходных каталогов (не трогаем site/images)
-    for folder in ("exhibitions", "sections", "assets", "contents", "conclusion"):
-        target = os.path.join(SITE, folder)
-        if os.path.isdir(target):
-            shutil.rmtree(target)
-
-    written: list[str] = []
-    image_usage: list[dict] = []
-
-    def write(path: str, content: str) -> None:
-        full = os.path.join(SITE, path)
-        os.makedirs(os.path.dirname(full), exist_ok=True)
-        with open(full, "w", encoding="utf-8") as fh:
-            fh.write(content)
-        written.append(path)
-
-    # тексты введения (для главной) и заключения
-    intro_html = rewrite_body(registry["intro"]["html"], None, media, image_usage,
-                              page="index.html")
-    conclusion_html = rewrite_body(registry["conclusion"]["html"], None, media,
-                                   image_usage, page="conclusion/index.html")
-    home_crumb = ("Главная", "index.html")
-    index_crumb = ("Указатель", "contents/index.html")
-
-    # --- выставки
-    for item in items:
-        body_html = rewrite_body(item["html"], item, media, image_usage)
-        siblings = by_letter[item["letter"]]
-        position = siblings.index(item)
-        prev_item = siblings[position - 1] if position > 0 else None
-        next_item = siblings[position + 1] if position + 1 < len(siblings) else None
-        body = "\n".join([
-            breadcrumbs(item["path"], [
-                home_crumb,
-                index_crumb,
-                (f'Раздел «{item["letter"]}»', letter_path[item["letter"]]),
-            ]),
-            article(item["title"], body_html,
-                    pager(item["path"], prev_item, next_item)),
-        ])
-        write(
-            item["path"],
-            layout(
-                item["path"],
-                f'{item["title"]} — {SITE_TITLE}',
-                meta_description(item["html"]),
-                body,
-                item["url"],
-                extra_head=json_ld(item),
-            ),
-        )
-
-    # --- разделы по буквам
-    for letter in letters:
-        title = letter["title"]
-        path = letter_path[title]
-        group = by_letter.get(title, [])
-        entries = [
-            (item["title"], item["path"], short(item["html"], 150))
-            for item in group
-        ]
-        body = "\n".join([
-            breadcrumbs(path, [home_crumb, index_crumb]),
-            f'<h1>Раздел «{html.escape(title)}»</h1>',
-            f'<p class="lead">Выставок в разделе: {len(group)}. '
-            'Полные описания — на отдельных страницах.</p>',
-            letter_nav(path, letter_path, current=title),
-            cards(path, entries),
-        ])
-        write(
-            path,
-            layout(
-                path,
-                f'Раздел «{title}» — {SITE_TITLE}',
-                f'Книжные выставки на букву «{title}»: {len(group)} описаний '
-                f'из глоссария «Книга – Выставка – Читатель».',
-                body,
-                page_url(path),
-            ),
-        )
-
-    # --- указатель
-    def contents_link(target: str) -> str:
-        return url_for("contents/index.html", target)
-
-    toc = [
-        '<h1>Алфавитный указатель</h1>',
-        f'<p class="lead">Всего выставок: {len(items)}. Разделов: {len(letters)}.</p>',
-        letter_nav("contents/index.html", letter_path),
-    ]
-    for letter in letters:
-        title = letter["title"]
-        group = sorted(by_letter.get(title, []), key=lambda i: i["title"])
-        toc.append(
-            f'<h2 id="letter-{letter_slug[title]}">'
-            f'<a href="{contents_link(letter_path[title])}">{html.escape(title)}</a></h2>'
-        )
-        toc.append('<ul class="toc">')
-        for item in group:
-            toc.append(
-                f'<li><a href="{contents_link(item["path"])}">'
-                f'{html.escape(item["title"])}</a></li>'
-            )
-        toc.append("</ul>")
-    write(
-        "contents/index.html",
-        layout(
-            "contents/index.html",
-            f"Алфавитный указатель — {SITE_TITLE}",
-            f"Алфавитный указатель глоссария: {len(items)} нетрадиционных форм "
-            "книжных выставок от А до Я.",
-            "\n".join(toc),
-            page_url("contents/index.html"),
-        ),
-    )
-
-    # --- заключение
-    conclusion_body = "\n".join([
-        breadcrumbs("conclusion/index.html", [home_crumb]),
-        article("Заключение", conclusion_html),
-    ])
-    write(
-        "conclusion/index.html",
-        layout(
-            "conclusion/index.html",
-            f"Заключение — {SITE_TITLE}",
-            meta_description(registry["conclusion"]["html"]),
-            conclusion_body,
-            page_url("conclusion/index.html"),
-        ),
-    )
-
-    # --- главная
-    featured = [i for i in items if i["images"]][:6]
-    entries = [
-        (item["title"], item["path"], short(item["html"], 150))
-        for item in featured
-    ]
-    home = "\n".join([
-        f"<h1>{html.escape(SITE_TITLE)}</h1>",
-        f'<p class="lead">{html.escape(SITE_SUBTITLE)}</p>',
-        "<h2>Алфавитный указатель</h2>",
-        letter_nav("index.html", letter_path),
-        "<h2>Избранные выставки</h2>",
-        cards("index.html", entries),
-        "<h2>О глоссарии</h2>",
-        intro_html,
-    ])
-    write(
-        "index.html",
-        layout(
-            "index.html",
-            f"{SITE_TITLE}: {SITE_SUBTITLE}",
-            f"Глоссарий нетрадиционных форм книжных выставок: {len(items)} описаний, "
-            "алфавитный указатель от А до Я, введение и заключение.",
-            home,
-            page_url("index.html"),
-        ),
-    )
-
-    # --- стили
-    write("assets/site.css", stylesheet())
-
-    # --- 404
-    not_found = "\n".join([
-        "<h1>Страница не найдена</h1>",
-        f'<p>Возможно, адрес изменился. Откройте '
-        f'<a href="{url_for("404.html", "contents/index.html")}">алфавитный указатель</a> '
-        f'или вернитесь на <a href="{url_for("404.html", "index.html")}">главную '
-        'страницу</a>.</p>',
-    ])
-    write(
-        "404.html",
-        layout(
-            "404.html",
-            f"Страница не найдена — {SITE_TITLE}",
-            "Запрошенная страница не найдена.",
-            not_found,
-            f"{BASE_URL}/404.html",
-        ),
-    )
-
-    # --- SEO
-    write("robots.txt", f"User-agent: *\nAllow: /\n\nSitemap: {BASE_URL}/sitemap.xml\n")
-    write("sitemap.xml", sitemap(items, letters, letter_path))
-
-    # --- отчёты
-    report = {
-        "generated": date.today().isoformat(),
-        "pages": len(written),
-        "exhibitions": len(items),
-        "letters": len(letters),
-        "image_references": len(image_usage),
-        "images_missing": media.missing,
-        "images_non_lfs": sorted(k for k, real in media.real.items() if not real),
-        "unused_images": sorted(set(media.files) - media.used),
-    }
-    with open(os.path.join(BUILD, "build_report.json"), "w", encoding="utf-8") as fh:
-        json.dump(report, fh, ensure_ascii=False, indent=1)
-    with open(os.path.join(BUILD, "url_map.json"), "w", encoding="utf-8") as fh:
-        json.dump(
-            [
-                {
-                    "title": i["title"],
-                    "letter": i["letter"],
-                    "source_url": i["source_url"],
-                    "source_id": i["source_id"],
-                    "target_path": i["path"],
-                    "url": i["url"],
-                    "images": i["images"],
-                }
-                for i in items
-            ],
-            fh,
-            ensure_ascii=False,
-            indent=1,
-        )
-
-    print("страниц:", len(written))
-    print("выставок:", len(items))
-    print("ссылок на изображения:", len(image_usage))
-    print("изображений без файла:", len(media.missing))
-    for miss in media.missing:
-        print("  !", miss)
-    return 0 if not media.missing else 1
-
-
-# ---------------------------------------------------------------- очистка разметки
-
-# Устаревшие/служебные теги и атрибуты оформления, которые встречаются в
-# материалах Joomla 1.5 и в HTML, выгруженном из Word.
 DROP_TAGS = {
     "script", "style", "noscript", "iframe", "xml", "o:p", "frame", "frameset",
     "noframes", "applet", "basefont", "isindex",
@@ -408,7 +128,7 @@ def strip_legacy_markup(root: Tag) -> None:
         if name in DROP_TAGS:
             tag.decompose()
             continue
-        if ":" in name:  # пространства имён Word/VML: оставляем только текст
+        if ":" in name:
             tag.unwrap()
             continue
         for attr in list(tag.attrs):
@@ -429,10 +149,22 @@ def strip_legacy_markup(root: Tag) -> None:
             node.replace_with(value.replace("\xa0", " ").replace("\u200b", ""))
 
 
+def liquid_url(resolved: str) -> str:
+    encoded = quote(resolved, safe="/:@?=&#%.+-_")
+    return f"{{{{ '{encoded}' | relative_url }}}}"
+
+
+def caption_for(item: dict | None, resolved: str) -> str:
+    name = unquote(os.path.basename(resolved)).rsplit(".", 1)[0]
+    name = name.replace("_", " ").strip()
+    if item:
+        return f"{item['title']}: {name}"
+    return name
+
+
 def rewrite_body(fragment: str, item: dict | None, media: Media,
                  usage: list[dict], page: str | None = None) -> str:
-    """Очистка легаси-разметки, относительные ссылки на изображения, figure,
-    безопасные внешние ссылки."""
+    """Очистка легаси-разметки, ссылки на изображения через relative_url, figure."""
     page = page or (item["path"] if item else "index.html")
     soup = BeautifulSoup(f"<div id='body'>{fragment}</div>", "html.parser")
     root = soup.find("div", id="body")
@@ -440,7 +172,6 @@ def rewrite_body(fragment: str, item: dict | None, media: Media,
 
     for img in root.find_all("img"):
         src = (img.get("src") or "").strip()
-        # Ссылка вокруг иллюстрации ведёт на полный оригинал.
         full_src = ""
         anchor = img.parent
         if isinstance(anchor, Tag) and anchor.name == "a":
@@ -457,8 +188,7 @@ def rewrite_body(fragment: str, item: dict | None, media: Media,
         alt = (img.get("alt") or "").strip() or caption_for(item, resolved)
         figure = soup.new_tag("figure")
         new_img = soup.new_tag("img")
-        new_img["src"] = quote(url_for(page, resolved.lstrip("/")),
-                              safe="/:@?=&#%.+-_")
+        new_img["src"] = liquid_url(resolved)
         new_img["alt"] = alt
         new_img["loading"] = "lazy"
         full = media.resolve(full_src) if full_src else None
@@ -466,8 +196,7 @@ def rewrite_body(fragment: str, item: dict | None, media: Media,
             media.used.add(full)
             usage.append({"page": page, "image": full})
             link = soup.new_tag("a")
-            link["href"] = quote(url_for(page, full.lstrip("/")),
-                                 safe="/:@?=&#%.+-_")
+            link["href"] = liquid_url(full)
             link.append(new_img)
             figure.append(link)
         else:
@@ -484,14 +213,11 @@ def rewrite_body(fragment: str, item: dict | None, media: Media,
         if href.startswith(("javascript:", "file:", "data:")):
             anchor.unwrap()
             continue
-        if href.startswith("mailto:") or href.startswith("#"):
+        if href.startswith(("mailto:", "#", "{{")):
             continue
         if anchor.find("img") or re.search(r"\.(jpe?g|png|gif)(\?|$)", href, re.I):
-            # Ссылка на иллюстрацию остаётся ссылкой на полный оригинал.
             continue
         if "glossary.ufacsdb.ru" in href or href.startswith("/index.php"):
-            # Внутренние адреса Joomla: переносим как простой текст,
-            # чтобы не публиковать ссылки на старый сайт.
             anchor.unwrap()
             continue
         if href.startswith("http"):
@@ -499,7 +225,6 @@ def rewrite_body(fragment: str, item: dict | None, media: Media,
             continue
         anchor.unwrap()
 
-    # figure не может находиться внутри p: выносим её перед абзацем.
     for figure in root.find_all("figure"):
         node = figure.parent
         paragraph = None
@@ -512,56 +237,137 @@ def rewrite_body(fragment: str, item: dict | None, media: Media,
             if not paragraph.get_text(strip=True) and not paragraph.find(["img", "figure"]):
                 paragraph.decompose()
 
-    # пустые обёртки, оставшиеся после удаления оформления Word/Joomla
     for tag in list(root.find_all(["p", "div", "li"])):
         if tag.decomposed or tag.parent is None:
             continue
         if not tag.get_text(strip=True) and not tag.find(["img", "figure", "a", "table"]):
             tag.decompose()
 
-    return root.decode_contents().strip()
+    blocks = []
+    for child in root.children:
+        chunk = str(child).strip()
+        if chunk:
+            chunk = re.sub(r"(<img\b[^>]*?)\s*/>", r"\1>", chunk)
+            blocks.append(chunk)
+    return "\n".join(blocks)
 
 
-def caption_for(item: dict | None, resolved: str) -> str:
-    name = unquote(os.path.basename(resolved)).rsplit(".", 1)[0]
-    name = name.replace("_", " ").strip()
-    if item:
-        return f"{item['title']}: {name}"
-    return name
+def page_url(path: str) -> str:
+    if path.endswith("index.html"):
+        directory = os.path.dirname(path)
+        return f"{BASE_URL}/" + (directory + "/" if directory else "")
+    return f"{BASE_URL}/{path}"
 
 
-def json_ld(item: dict) -> str:
-    data = {
-        "@context": "https://schema.org",
-        "@type": "Article",
-        "headline": item["title"],
-        "inLanguage": "ru",
-        "isPartOf": {"@type": "WebSite", "name": f"{SITE_TITLE}: {SITE_SUBTITLE}",
-                     "url": f"{BASE_URL}/"},
-        "mainEntityOfPage": item["url"],
+def main() -> int:
+    with open(os.path.join(BUILD, "registry.json"), encoding="utf-8") as fh:
+        registry = json.load(fh)
+
+    media = Media()
+    items = registry["items"]
+    letters = registry["letters"]
+
+    for folder in ("_exhibitions", "_sections"):
+        target = os.path.join(SITE, folder)
+        if os.path.isdir(target):
+            shutil.rmtree(target)
+        os.makedirs(target, exist_ok=True)
+
+    written: list[str] = []
+    image_usage: list[dict] = []
+
+    def write(rel_path: str, content: str) -> None:
+        full = os.path.join(SITE, rel_path)
+        os.makedirs(os.path.dirname(full), exist_ok=True)
+        with open(full, "w", encoding="utf-8") as fh:
+            fh.write(content.rstrip() + "\n")
+        written.append(rel_path)
+
+    featured_slugs = {i["slug"] for i in items if i["images"]}
+    featured_slugs = {
+        i["slug"] for i in [item for item in items if item["images"]][:6]
     }
-    return ('<script type="application/ld+json">'
-            + json.dumps(data, ensure_ascii=False)
-            + "</script>\n")
 
+    for order, item in enumerate(items, start=1):
+        item["url"] = page_url(item["path"])
+        body_html = rewrite_body(item["html"], item, media, image_usage)
+        fm = front_matter(
+            title=item["title"],
+            letter=item["letter"],
+            order=order,
+            featured=True if item["slug"] in featured_slugs else None,
+        )
+        write(f"_exhibitions/{item['slug']}.html", f"{fm}\n{body_html}")
 
-def sitemap(items, letters, letter_path) -> str:
-    entries = [
-        (f"{BASE_URL}/", "1.0"),
-        (f"{BASE_URL}/contents/", "0.9"),
-        (f"{BASE_URL}/conclusion/", "0.8"),
-    ]
-    for letter in letters:
-        entries.append((page_url(letter_path[letter["title"]]), "0.7"))
-    for item in items:
-        entries.append((item["url"], "0.8"))
-    parts = ['<?xml version="1.0" encoding="UTF-8"?>',
-             '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
-    for loc, priority in entries:
-        parts.append(f"  <url><loc>{html.escape(loc)}</loc>"
-                     f"<priority>{priority}</priority></url>")
-    parts.append("</urlset>")
-    return "\n".join(parts) + "\n"
+    for order, letter in enumerate(letters, start=1):
+        title = letter["title"]
+        slug = translit(title)
+        fm = front_matter(
+            title=f"Раздел «{title}»",
+            letter=title,
+            order=order,
+        )
+        write(f"_sections/{slug}.html", fm)
+
+    intro_html = rewrite_body(registry["intro"]["html"], None, media, image_usage,
+                              page="index.html")
+    home_fm = front_matter(
+        layout="home",
+        description=(
+            f"Глоссарий нетрадиционных форм книжных выставок: {len(items)} описаний, "
+            "алфавитный указатель от А до Я, введение и заключение."
+        ),
+    )
+    write("index.html", f"{home_fm}\n{intro_html}")
+
+    conclusion_html = rewrite_body(registry["conclusion"]["html"], None, media,
+                                   image_usage, page="conclusion/index.html")
+    conclusion_fm = front_matter(
+        layout="article",
+        title="Заключение",
+    )
+    write("conclusion/index.html", f"{conclusion_fm}\n{conclusion_html}")
+
+    report = {
+        "generated": date.today().isoformat(),
+        "content_files": len(written),
+        "exhibitions": len(items),
+        "letters": len(letters),
+        "image_references": len(image_usage),
+        "images_missing": media.missing,
+        "images_non_lfs": sorted(k for k, real in media.real.items() if not real),
+        "unused_images": sorted(set(media.files) - media.used),
+    }
+    with open(os.path.join(BUILD, "build_report.json"), "w", encoding="utf-8") as fh:
+        json.dump(report, fh, ensure_ascii=False, indent=1)
+    with open(os.path.join(BUILD, "url_map.json"), "w", encoding="utf-8") as fh:
+        json.dump(
+            [
+                {
+                    "title": i["title"],
+                    "letter": i["letter"],
+                    "source_url": i["source_url"],
+                    "source_id": i["source_id"],
+                    "source_file": f"site/_exhibitions/{i['slug']}.html",
+                    "target_path": i["path"],
+                    "url": i["url"],
+                    "images": i["images"],
+                }
+                for i in items
+            ],
+            fh,
+            ensure_ascii=False,
+            indent=1,
+        )
+
+    print("содержательных файлов:", len(written))
+    print("выставок:", len(items))
+    print("разделов:", len(letters))
+    print("ссылок на изображения:", len(image_usage))
+    print("изображений без файла:", len(media.missing))
+    for miss in media.missing:
+        print("  !", miss)
+    return 0 if not media.missing else 1
 
 
 if __name__ == "__main__":

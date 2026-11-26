@@ -1,0 +1,35 @@
+title: "«Книга – Выставка – Читатель»"
+subtitle: "глоссарий нетрадиционных форм книжных выставок"
+organization: "Центральная городская детская библиотека г. Уфы"
+lang: "ru"
+url: "https://r2force.github.io"
+baseurl: "/glossary"
+
+markdown: kramdown
+plugins: []
+
+collections:
+  exhibitions:
+    output: true
+    permalink: /exhibitions/:name/
+  sections:
+    output: true
+    permalink: /sections/:name/
+
+defaults:
+  - scope:
+      path: ""
+      type: "exhibitions"
+    values:
+      layout: "exhibition"
+  - scope:
+      path: ""
+      type: "sections"
+    values:
+      layout: "section"
+
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - README.md
+  - vendor/

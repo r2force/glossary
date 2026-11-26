@@ -24,33 +24,38 @@ jobs:
         with:
           lfs: true
 
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+          working-directory: site
+          bundler-cache: true
+
+      - name: Build Jekyll site
+        run: |
+          BUNDLE_GEMFILE=site/Gemfile bundle exec jekyll build \
+            --source site --destination _site --strict_front_matter
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
 
-      - name: Install builder dependencies
-        run: python -m pip install --quiet beautifulsoup4 lxml
-
-      - name: Prepare source registry for rebuild
-        run: |
-          # Реестр хранится в репозитории; пересобираем страницы из него,
-          # чтобы публиковался именно воспроизводимый результат генератора.
-          python migration/tools/extract.py --from-registry
-          python migration/tools/build_site.py
+      - name: Install verifier dependencies
+        run: python -m pip install --quiet beautifulsoup4 lxml pyyaml
 
       - name: Verify images are real (not LFS pointers)
         run: python migration/tools/verify_media.py
 
-      - name: Verify site content, links and SEO
-        run: python migration/tools/verify_site.py --repeat
+      - name: Verify Jekyll source, built HTML, links and SEO
+        run: python migration/tools/verify_site.py --site _site --repeat
 
-      - name: Confirm site has no LFS pointers
+      - name: Confirm built _site has no LFS pointers
         run: |
           python - <<'PY'
           import os, sys
           bad = []
-          for dirpath, _, names in os.walk("site"):
+          for dirpath, _, names in os.walk("_site"):
               for name in names:
                   if not name.lower().endswith((".jpg", ".jpeg", ".png", ".gif")):
                       continue
@@ -59,18 +64,18 @@ jobs:
                       if fh.read(40).startswith(b"version https://git-lfs"):
                           bad.append(path)
           if bad:
-              print("В site/ остались LFS-указатели:", *bad[:5], sep="\n  ")
+              print("В _site/ остались LFS-указатели:", *bad[:5], sep="\n  ")
               sys.exit(1)
-          print("Все иллюстрации в site/ — реальные файлы")
+          print("Все иллюстрации в _site/ — реальные файлы")
           PY
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
-      - name: Upload site as Pages artifact
+      - name: Upload _site as Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: site
+          path: _site
 
   deploy:
     needs: build
@@ -90,7 +95,7 @@ jobs:
       - name: Check published site over HTTPS
         run: |
           python3 - <<'PY'
-          import re, sys, time, urllib.request, urllib.error
+          import sys, time, urllib.request, urllib.error
 
           BASE = "https://r2force.github.io/glossary"
           IMAGE = "/images/stories/exhibition/horovod/horovod1.jpg"
@@ -119,12 +124,11 @@ jobs:
                           return response.status, response.read()
                   except urllib.error.HTTPError as exc:
                       return exc.code, exc.read()
-                  except Exception as exc:  # сеть/таймаут — повторяем
+                  except Exception as exc:
                       last = exc
                       time.sleep(10)
               raise SystemExit(f"{path}: недоступен: {last!r}")
 
-          # CDN обновляется не мгновенно: ждём появления маркеров новой сборки.
           for attempt in range(18):
               got, body = get("/")
               if got == 200 and "Алфавитный указатель" in body.decode("utf-8", "replace"):
@@ -153,8 +157,6 @@ jobs:
               if got != 200 or not is_jpeg or len(body) < 2000:
                   failures.append(f"{path}: изображение не отдано как JPEG")
 
-          # GitHub Pages отдаёт собственную страницу 404; главное — что
-          # неизвестный адрес не возвращает 200 и не считается страницей сайта.
           got, body = get("/this-page-does-not-exist-12345/")
           text = body.decode("utf-8", "replace")
           not_found = got == 404

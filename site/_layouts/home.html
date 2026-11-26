@@ -1,0 +1,12 @@
+---
+layout: default
+---
+<h1>{{ site.title | escape }}</h1>
+<p class="lead">{{ site.subtitle | escape }}</p>
+<h2>Алфавитный указатель</h2>
+{% include letter-nav.html %}
+<h2>Избранные выставки</h2>
+{% assign featured_items = site.exhibitions | where: "featured", true | sort: "order" %}
+{% include cards.html items=featured_items %}
+<h2>О глоссарии</h2>
+{{ content }}
