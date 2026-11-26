@@ -98,7 +98,7 @@ jobs:
 
           checks = [
               ("/", 200, "Книга"),
-              ("/introduction/index.html", 200, "ВВЕДЕНИЕ"),
+              ("/introduction/index.html", 200, "Введение"),
               ("/contents/index.html", 200, "Алфавитный указатель"),
               ("/conclusion/index.html", 200, "Заключение"),
               ("/sections/a/index.html", 200, "Раздел"),
