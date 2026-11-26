@@ -3,8 +3,8 @@ subtitle: "глоссарий нетрадиционных форм книжны
 organization: "МБУ «Централизованная система детских библиотек» ГО г. Уфа РБ"
 official_email: "ufacsdb@yandex.ru"
 lang: "ru"
-url: "https://r2force.github.io"
-baseurl: "/glossary"
+url: "https://glossary.ufacsdb.ru"
+baseurl: ""
 
 markdown: kramdown
 plugins: []
