@@ -1,6 +1,9 @@
 .idea
 /.tools/
 /.codebase-memory/
+.DS_Store
+.venv/
+reports/
 
 # Сгенерированный байткод Python
 __pycache__/

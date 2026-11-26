@@ -1,2 +1,5 @@
-# Index project sources, not third-party libraries or migration evidence.
-package-lock.json
+# Index maintained sources, not environments or generated output.
+.venv/
+_site/
+reports/
+site/vendor/

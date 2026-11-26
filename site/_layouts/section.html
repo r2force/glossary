@@ -5,5 +5,6 @@ layout: default
 {% include breadcrumbs.html index=true %}
 <h1>{{ page.title | escape }}</h1>
 <p class="lead">Выставок в разделе: {{ group.size }}. Полные описания — на отдельных страницах.</p>
+{{ content }}
 {% include letter-nav.html %}
 {% include cards.html items=group %}

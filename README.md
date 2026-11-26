@@ -1,0 +1,88 @@
+# Книга – Выставка – Читатель
+
+Глоссарий нетрадиционных форм книжных выставок: [открыть сайт](https://r2force.github.io/glossary/).
+
+Содержание и оформление хранятся в `site/`. Jekyll собирает полноценный статический HTML в `_site/`, который публикуется через GitHub Pages. Тексты доступны непосредственно в HTML.
+
+## Окружение
+
+Нужны Python 3.12 или новее, Ruby 3.3, Bundler и Git LFS. Версии для разработки указаны в `.python-version` и `.ruby-version`. Все команды ниже выполняются из корня репозитория.
+
+```bash
+git lfs install
+git lfs pull
+python3 -m venv .venv
+.venv/bin/python -m pip install -r requirements.txt
+BUNDLE_GEMFILE=site/Gemfile bundle install
+```
+
+Виртуальное окружение создаётся на текущей машине; не переносите `.venv` между ОС или версиями Python. Git LFS должен получить реальные изображения перед сборкой и проверкой.
+
+## Сборка и проверка
+
+Полная локальная проверка:
+
+```bash
+PYTHON=.venv/bin/python scripts/check.sh
+```
+
+Без переменной `PYTHON` скрипт выбирает `.venv/bin/python`, если окружение создано, иначе `python3`. По отдельности:
+
+```bash
+.venv/bin/python -m unittest discover -s tests
+BUNDLE_GEMFILE=site/Gemfile bundle exec jekyll build --source site --destination _site --strict_front_matter
+.venv/bin/python scripts/verify_media.py --site _site
+.venv/bin/python scripts/verify_site.py --site _site --repeat
+```
+
+Проверки сопоставляют исходники Jekyll с готовым HTML, проверяют локальные ссылки, изображения, метаданные, sitemap, префикс проекта и повторяемость сборки. Они проверяют текущее содержание репозитория; правильность редакторских изменений оценивается при просмотре diff и затронутых страниц.
+
+Для просмотра с действующим префиксом `/glossary/`:
+
+```bash
+BUNDLE_GEMFILE=site/Gemfile bundle exec jekyll serve --source site --destination _site
+```
+
+Откройте [локальный сайт](http://127.0.0.1:4000/glossary/).
+
+## Где менять сайт
+
+| Задача | Файлы |
+| --- | --- |
+| Изменить или добавить выставку | `site/_exhibitions/<slug>.html` |
+| Изменить буквенный раздел | `site/_sections/<letter>.html` |
+| Изменить введение или заключение | `site/index.html`, `site/conclusion/index.html` |
+| Изменить меню или алфавит | `site/_data/navigation.yml`, `site/_data/alphabet.yml` |
+| Изменить общий HTML и оформление | `site/_layouts/`, `site/_includes/`, `site/assets/site.css` |
+| Изменить адрес и настройки Jekyll | `site/_config.yml` |
+| Изменить проверки и CI | `scripts/`, `tests/`, `.github/workflows/` |
+
+Новая выставка — отдельный HTML-файл с YAML front matter и полным текстом:
+
+```html
+---
+title: "Название выставки"
+letter: "А"
+order: 1000
+---
+<p>Полный текст материала.</p>
+```
+
+Выберите свободное имя файла и значение `order`, задающее место в списке. Значение `letter` должно соответствовать существующему разделу. Для новой буквы добавьте файл в `_sections/` и запись в `_data/alphabet.yml`. Шаблоны автоматически включают выставки в соответствующий раздел и sitemap; `featured: true` добавляет материал в подборку главной страницы.
+
+Имя файла выставки определяет постоянный адрес `/exhibitions/<slug>/`, имя файла раздела — `/sections/<letter>/`. Сохраняйте существующие имена при изменении заголовков. Если нужен новый URL, предусмотрите сохранение переходов со старого адреса.
+
+В статьях хранится только содержание: общий `<html>`, `<head>`, меню и основной `<h1>` создают шаблоны. Сохраняйте авторские повторы, структуру, подписи и порядок иллюстраций, если задача не предусматривает редактуру. Изображения добавляйте в `site/images/`, проверяйте регистр пути, содержательный `alt` и Git LFS по `.gitattributes`.
+
+Ссылки внутри сайта и изображения должны учитывать префикс проекта:
+
+```html
+<a href="{{ '/exhibitions/akrostih/' | relative_url }}">Выставка – акростих</a>
+<img src="{{ '/images/stories/exhibition/horovod/horovod1.jpg' | relative_url }}" alt="Иллюстрация выставки «Хоровод»">
+```
+
+## Публикация
+
+`.github/workflows/build-check.yml` проверяет pull request в `main`. После push в `main` workflow `.github/workflows/deploy-pages.yml` собирает сайт, выполняет проверки, загружает только `_site/` как Pages artifact и проверяет опубликованные HTTPS-адреса. Workflow также поддерживает ручной запуск.
+
+В настройках репозитория источник GitHub Pages — GitHub Actions. Публичный адрес и префикс задаются в `site/_config.yml`; при изменении адреса согласуйте с ним проверку опубликованного сайта в workflow. `_site/` не коммитится.

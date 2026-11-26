@@ -1,74 +1,40 @@
-name: Build check (glossary)
+name: Check glossary
 
-# Проверка сборки Jekyll на ветке разработки и в PR: те же шаги, что и в
-# deploy-pages.yml, но без публикации.
 on:
   push:
-    branches:
-      - 'arena/**'
+    branches-ignore: [main]
     paths:
       - 'site/**'
-      - 'migration/tools/**'
-      - '.github/workflows/build-check.yml'
-      - '.github/workflows/deploy-pages.yml'
+      - 'scripts/**'
+      - 'tests/**'
+      - 'requirements.txt'
+      - '.python-version'
+      - '.ruby-version'
+      - '.github/workflows/**'
   pull_request:
-    branches:
-      - main
+    branches: [main]
   workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
-  build:
+  check:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - name: Checkout (with Git LFS originals)
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           lfs: true
-
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
+      - uses: ruby/setup-ruby@v1
         with:
           ruby-version: '3.3'
           working-directory: site
           bundler-cache: true
-
-      - name: Build Jekyll site
-        run: |
-          BUNDLE_GEMFILE=site/Gemfile bundle exec jekyll build \
-            --source site --destination _site --strict_front_matter
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
-          python-version: '3.12'
-
-      - name: Install verifier dependencies
-        run: python -m pip install --quiet beautifulsoup4 lxml pyyaml
-
-      - name: Verify images are real (not LFS pointers)
-        run: python migration/tools/verify_media.py
-
-      - name: Verify Jekyll source, built HTML, links and SEO
-        run: python migration/tools/verify_site.py --site _site --repeat
-
-      - name: Confirm built _site has no LFS pointers
-        run: |
-          python - <<'PY'
-          import os, sys
-          bad = []
-          for dirpath, _, names in os.walk("_site"):
-              for name in names:
-                  if not name.lower().endswith((".jpg", ".jpeg", ".png", ".gif")):
-                      continue
-                  path = os.path.join(dirpath, name)
-                  with open(path, "rb") as fh:
-                      if fh.read(40).startswith(b"version https://git-lfs"):
-                          bad.append(path)
-          if bad:
-              print("В _site/ остались LFS-указатели:", *bad[:5], sep="\n  ")
-              sys.exit(1)
-          print("Все иллюстрации в _site/ — реальные файлы")
-          PY
+          python-version-file: .python-version
+          cache: pip
+      - run: python -m pip install -r requirements.txt
+      - name: Test, build and verify
+        run: PYTHON=python scripts/check.sh

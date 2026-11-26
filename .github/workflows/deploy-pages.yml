@@ -2,14 +2,11 @@ name: Deploy glossary to GitHub Pages
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   workflow_dispatch:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
   group: pages
@@ -18,162 +15,55 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      pages: read
     steps:
-      - name: Checkout (with Git LFS originals)
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           lfs: true
-
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
+      - uses: ruby/setup-ruby@v1
         with:
           ruby-version: '3.3'
           working-directory: site
           bundler-cache: true
-
-      - name: Build Jekyll site
-        run: |
-          BUNDLE_GEMFILE=site/Gemfile bundle exec jekyll build \
-            --source site --destination _site --strict_front_matter
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
-          python-version: '3.12'
-
-      - name: Install verifier dependencies
-        run: python -m pip install --quiet beautifulsoup4 lxml pyyaml
-
-      - name: Verify images are real (not LFS pointers)
-        run: python migration/tools/verify_media.py
-
-      - name: Verify Jekyll source, built HTML, links and SEO
-        run: python migration/tools/verify_site.py --site _site --repeat
-
-      - name: Confirm built _site has no LFS pointers
-        run: |
-          python - <<'PY'
-          import os, sys
-          bad = []
-          for dirpath, _, names in os.walk("_site"):
-              for name in names:
-                  if not name.lower().endswith((".jpg", ".jpeg", ".png", ".gif")):
-                      continue
-                  path = os.path.join(dirpath, name)
-                  with open(path, "rb") as fh:
-                      if fh.read(40).startswith(b"version https://git-lfs"):
-                          bad.append(path)
-          if bad:
-              print("В _site/ остались LFS-указатели:", *bad[:5], sep="\n  ")
-              sys.exit(1)
-          print("Все иллюстрации в _site/ — реальные файлы")
-          PY
-
-      - name: Configure Pages
-        uses: actions/configure-pages@v5
-
-      - name: Upload _site as Pages artifact
-        uses: actions/upload-pages-artifact@v3
+          python-version-file: .python-version
+          cache: pip
+      - run: python -m pip install -r requirements.txt
+      - name: Test, build and verify
+        run: PYTHON=python scripts/check.sh
+      - uses: actions/configure-pages@v6
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: _site
 
   deploy:
     needs: build
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+    outputs:
+      page_url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
 
   smoke:
     needs: deploy
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
+      - uses: actions/checkout@v7
       - name: Check published site over HTTPS
-        run: |
-          python3 - <<'PY'
-          import sys, time, urllib.request, urllib.error
-
-          BASE = "https://r2force.github.io/glossary"
-          IMAGE = "/images/stories/exhibition/horovod/horovod1.jpg"
-          THUMB = "/images/stories/exhibition/horovod/thumbs/60x60/horovod1.jpg"
-
-          checks = [
-              ("/", 200, "Книга"),
-              ("/contents/index.html", 200, "Алфавитный указатель"),
-              ("/conclusion/index.html", 200, "Заключение"),
-              ("/sections/a/index.html", 200, "Раздел"),
-              ("/sections/p/index.html", 200, "Раздел"),
-              ("/sections/ya/index.html", 200, "Раздел"),
-              ("/exhibitions/akrostih/index.html", 200, "акростих"),
-              ("/exhibitions/horovod/index.html", 200, "хоровод"),
-              ("/exhibitions/yarmarka-literaturnaya/index.html", 200, "ярмарка"),
-              ("/assets/site.css", 200, "--accent"),
-          ]
-
-          def get(path, attempts=6):
-              last = None
-              for attempt in range(attempts):
-                  try:
-                      request = urllib.request.Request(
-                          BASE + path, headers={"User-Agent": "glossary-smoke/1.0"})
-                      with urllib.request.urlopen(request, timeout=30) as response:
-                          return response.status, response.read()
-                  except urllib.error.HTTPError as exc:
-                      return exc.code, exc.read()
-                  except Exception as exc:
-                      last = exc
-                      time.sleep(10)
-              raise SystemExit(f"{path}: недоступен: {last!r}")
-
-          for attempt in range(18):
-              got, body = get("/")
-              if got == 200 and "Алфавитный указатель" in body.decode("utf-8", "replace"):
-                  break
-              print(f"ожидание публикации, попытка {attempt + 1}")
-              time.sleep(10)
-
-          failures = []
-          for path, status, needle in checks:
-              try:
-                  got, body = get(path)
-              except SystemExit as exc:
-                  failures.append(str(exc))
-                  continue
-              text = body.decode("utf-8", "replace")
-              ok = got == status and needle in text
-              print(("ok  " if ok else "FAIL ") + f"{got} {path}")
-              if not ok:
-                  failures.append(f"{path}: {got}, маркер найден: {needle in text}")
-
-          for path in (IMAGE, THUMB):
-              got, body = get(path)
-              is_jpeg = body[:2] == b"\xff\xd8"
-              line = "ok  " if got == 200 and is_jpeg else "FAIL "
-              print(f"{line}{got} {path} ({len(body)} байт, jpeg={is_jpeg})")
-              if got != 200 or not is_jpeg or len(body) < 2000:
-                  failures.append(f"{path}: изображение не отдано как JPEG")
-
-          got, body = get("/this-page-does-not-exist-12345/")
-          text = body.decode("utf-8", "replace")
-          not_found = got == 404
-          print(("ok  " if not_found else "FAIL ")
-                + f"{got} неизвестный адрес"
-                + (" (своя страница)" if "Страница не найдена" in text else ""))
-          if not not_found:
-              failures.append(f"404: получен {got}")
-
-          got, body = get("/404.html")
-          own_404 = got == 200 and "Страница не найдена" in body.decode("utf-8", "replace")
-          print(("ok  " if own_404 else "FAIL ") + f"{got} /404.html")
-          if not own_404:
-              failures.append("/404.html: своя страница не отдаётся")
-
-          if failures:
-              print("НЕУДАЧИ:", *failures, sep="\n  ")
-              sys.exit(1)
-          print("Все проверки опубликованного сайта пройдены")
-          PY
+        env:
+          PAGES_URL: ${{ needs.deploy.outputs.page_url }}
+        run: python3 scripts/smoke_site.py --base "$PAGES_URL"
