@@ -208,6 +208,26 @@ def fix_cloaked_email(html: str) -> str:
     return html
 
 
+def from_registry() -> int:
+    """Использовать сохранённый реестр как источник сборки (для CI).
+
+    Реестр в migration/build/registry.json уже содержит нормализованные тексты;
+    при наличии сырья он пересобирается заново, иначе используется как есть.
+    """
+    path = os.path.join(OUT, "registry.json")
+    if not os.path.exists(path):
+        print("реестр отсутствует — извлекаю из сырья", file=sys.stderr)
+        return main()
+    with open(path, encoding="utf-8") as fh:
+        registry = json.load(fh)
+    print(
+        "реестр готов:",
+        len(registry["items"]), "выставок,",
+        len(registry["letters"]), "букв",
+    )
+    return 0
+
+
 def main() -> int:
     os.makedirs(OUT, exist_ok=True)
     manifest = load_manifest()
@@ -393,6 +413,19 @@ def main() -> int:
             "images": images_in(body),
         }
 
+    # Устойчивые адреса страниц: slug из заголовка, порядок — от указателя.
+    used: set[str] = set()
+    for item in items:
+        base = translit(re.sub(r"^Выставка\s*[-–—]?\s*", "", item["title"], flags=re.I))
+        base = re.sub(r"-+", "-", base).strip("-")[:60] or "vystavka"
+        slug, index = base, 2
+        while slug in used:
+            slug = f"{base}-{index}"
+            index += 1
+        used.add(slug)
+        item["slug"] = slug
+        item["path"] = f"exhibitions/{slug}/index.html"
+
     registry = {
         "source_host": BASE_HOST,
         "letters": ordered_letters,
@@ -414,6 +447,27 @@ def main() -> int:
     return 0
 
 
+TRANSLIT = {
+    "а": "a", "б": "b", "в": "v", "г": "g", "д": "d", "е": "e", "ё": "e",
+    "ж": "zh", "з": "z", "и": "i", "й": "j", "к": "k", "л": "l", "м": "m",
+    "н": "n", "о": "o", "п": "p", "р": "r", "с": "s", "т": "t", "у": "u",
+    "ф": "f", "х": "h", "ц": "c", "ч": "ch", "ш": "sh", "щ": "sch",
+    "ъ": "", "ы": "y", "ь": "", "э": "e", "ю": "yu", "я": "ya",
+}
+
+
+def translit(value: str) -> str:
+    out = []
+    for char in value.lower():
+        if char in TRANSLIT:
+            out.append(TRANSLIT[char])
+        elif char.isalnum():
+            out.append(char)
+        else:
+            out.append(" ")
+    return re.sub(r"[^a-z0-9]+", "-", "".join(out)).strip("-")
+
+
 def normalize_title(title: str) -> str:
     value = title.lower().replace("ё", "е")
     value = re.sub(r"[^a-zа-я0-9]+", " ", value)
@@ -421,4 +475,4 @@ def normalize_title(title: str) -> str:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    sys.exit(from_registry() if "--from-registry" in sys.argv else main())

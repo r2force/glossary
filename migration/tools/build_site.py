@@ -306,11 +306,8 @@ def main() -> int:
     items = registry["items"]
     letters = registry["letters"]
 
-    # слаги и адреса
-    used: set[str] = set()
+    # адреса берём из реестра (их же проверяет verify_site.py)
     for item in items:
-        item["slug"] = slug_for(item["title"], used)
-        item["path"] = f"exhibitions/{item['slug']}/index.html"
         item["url"] = page_url(item["path"])
 
     by_letter: dict[str, list[dict]] = {}
