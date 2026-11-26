@@ -60,7 +60,10 @@ BUNDLE_GEMFILE=site/Gemfile bundle exec jekyll serve --source site --destination
 | Изменить меню или алфавит | `site/_data/navigation.yml`, `site/_data/alphabet.yml` |
 | Изменить общий HTML и оформление | `site/_layouts/`, `site/_includes/`, `site/assets/site.css` |
 | Изменить адрес и настройки Jekyll | `site/_config.yml` |
+| Изменить официальную электронную почту во всех контактных ссылках | `official_email` в `site/_config.yml` |
 | Изменить проверки и CI | `scripts/`, `tests/`, `.github/workflows/` |
+
+Официальная почта задаётся только в `official_email` в `site/_config.yml`. Контактные кнопки помечаются `data-email` без адреса: общий шаблон передаёт его в обратном порядке, а JavaScript раскрывает обычную почтовую ссылку по нажатию. Открытый адрес не попадает в HTML и поисковый индекс; это затрудняет простой сбор адресов, но не останавливает ботов, исполняющих JavaScript.
 
 Новая выставка — отдельный HTML-файл с YAML front matter и полным текстом:
 

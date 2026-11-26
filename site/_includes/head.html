@@ -18,6 +18,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{{ page_title | escape_once }}</title>
 <meta name="description" content="{{ meta_desc | escape_once }}">
+{% if page.content contains 'data-email' %}<meta name="official-email" content="{{ site.official_email | split: '' | reverse | join: '' | escape }}">{% endif %}
 <link rel="canonical" href="{{ page.url | absolute_url | escape }}">
 <link rel="icon" href="{{ '/favicon.ico' | relative_url }}" sizes="16x16 32x32 48x48 64x64">
 <link rel="icon" href="{{ '/favicon.svg' | relative_url }}" type="image/svg+xml" sizes="any">

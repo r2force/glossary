@@ -57,9 +57,11 @@ if (typeof document !== 'undefined') {
 // Keep the address out of static HTML and search text; reveal it on request.
 // This deters simple scrapers, but cannot stop bots that execute JavaScript.
 document.querySelectorAll('[data-email]').forEach((button) => {
+  const emailConfig = document.querySelector('meta[name="official-email"]');
+  if (!emailConfig || !emailConfig.content) return;
   button.hidden = false;
   button.addEventListener('click', () => {
-    const address = atob(button.dataset.email);
+    const address = [...emailConfig.content].reverse().join('');
     const link = document.createElement('a');
     link.className = button.className;
     link.href = `mailto:${address}`;
