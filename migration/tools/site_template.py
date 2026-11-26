@@ -33,7 +33,6 @@ LETTERS = "АБВГДЕЖЗИКЛМНОПРСТУФХЦЧШЭЮЯ"
 NAV = (
     ("index.html", "Главная"),
     ("contents/index.html", "Указатель"),
-    ("introduction/index.html", "Введение"),
     ("conclusion/index.html", "Заключение"),
 )
 

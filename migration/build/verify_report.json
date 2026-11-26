@@ -1,10 +1,10 @@
 {
- "html_pages": 301,
+ "html_pages": 300,
  "exhibitions": 271,
  "texts_checked": 271,
  "images_checked": 76,
- "sitemap_urls": 300,
- "reachable_pages": 300,
+ "sitemap_urls": 299,
+ "reachable_pages": 299,
  "errors": [],
  "warnings": [
   "exhibitions/advajzer/index.html: изображение осталось LFS-указателем '../../images/stories/exhibition/%D0%B2%D1%8B%D1%81%D1%82%D0%B0%D0%B2%D0%BA%D0%B0%20%D0%B0%D0%B4%D0%B2%D0%B0%D0%B9%D0%B7%D0%B5%D1%801.jpg'",

@@ -2,7 +2,7 @@
 """Сборка статического сайта глоссария в site/.
 
 Вход:  migration/build/registry.json (см. extract.py), файлы site/images/.
-Выход: site/index.html, site/introduction/, site/conclusion/,
+Выход: site/index.html, site/contents/, site/conclusion/,
        site/exhibitions/<slug>/, site/sections/<letter>/,
        site/assets/site.css, site/sitemap.xml, site/robots.txt, site/404.html.
 
@@ -152,8 +152,7 @@ def main() -> int:
     }
 
     # чистка прежних выходных каталогов (не трогаем site/images)
-    for folder in ("exhibitions", "sections", "assets", "contents",
-                   "introduction", "conclusion"):
+    for folder in ("exhibitions", "sections", "assets", "contents", "conclusion"):
         target = os.path.join(SITE, folder)
         if os.path.isdir(target):
             shutil.rmtree(target)
@@ -168,9 +167,9 @@ def main() -> int:
             fh.write(content)
         written.append(path)
 
-    # тексты введения и заключения готовятся один раз и переиспользуются
+    # тексты введения (для главной) и заключения
     intro_html = rewrite_body(registry["intro"]["html"], None, media, image_usage,
-                              page="introduction/index.html")
+                              page="index.html")
     conclusion_html = rewrite_body(registry["conclusion"]["html"], None, media,
                                    image_usage, page="conclusion/index.html")
     home_crumb = ("Главная", "index.html")
@@ -268,25 +267,21 @@ def main() -> int:
         ),
     )
 
-    # --- введение и заключение
-    for path, key, heading, text in (
-        ("introduction/index.html", "intro", "Введение", intro_html),
-        ("conclusion/index.html", "conclusion", "Заключение", conclusion_html),
-    ):
-        body = "\n".join([
-            breadcrumbs(path, [home_crumb]),
-            article(heading, text),
-        ])
-        write(
-            path,
-            layout(
-                path,
-                f"{heading} — {SITE_TITLE}",
-                meta_description(registry[key]["html"]),
-                body,
-                page_url(path),
-            ),
-        )
+    # --- заключение
+    conclusion_body = "\n".join([
+        breadcrumbs("conclusion/index.html", [home_crumb]),
+        article("Заключение", conclusion_html),
+    ])
+    write(
+        "conclusion/index.html",
+        layout(
+            "conclusion/index.html",
+            f"Заключение — {SITE_TITLE}",
+            meta_description(registry["conclusion"]["html"]),
+            conclusion_body,
+            page_url("conclusion/index.html"),
+        ),
+    )
 
     # --- главная
     featured = [i for i in items if i["images"]][:6]
@@ -553,7 +548,6 @@ def json_ld(item: dict) -> str:
 def sitemap(items, letters, letter_path) -> str:
     entries = [
         (f"{BASE_URL}/", "1.0"),
-        (f"{BASE_URL}/introduction/", "0.9"),
         (f"{BASE_URL}/contents/", "0.9"),
         (f"{BASE_URL}/conclusion/", "0.8"),
     ]
