@@ -29,14 +29,13 @@
 | --- | --- | --- |
 | Сбор источника (нужен интернет) | `python migration/tools/harvest.py` | `migration/source/` |
 | Разбор в реестр | `python migration/tools/extract.py` | `migration/build/registry.json` |
-| Сборка сайта | `python migration/tools/build_site.py` | `site/` |
+| Экспорт контента в коллекции Jekyll | `python migration/tools/build_site.py` | `site/_exhibitions/`, `site/_sections/`, `site/index.html`, `site/conclusion/index.html` |
+| Сборка статического сайта Jekyll | `BUNDLE_GEMFILE=site/Gemfile bundle exec jekyll build --source site --destination _site --strict_front_matter` | `_site/` |
 | Проверка изображений (нужен `git lfs pull`) | `python migration/tools/verify_media.py` | `migration/build/media_report.json` |
-| Независимая проверка | `python migration/tools/verify_site.py --repeat` | `migration/build/verify_report.json` |
+| Независимая проверка | `python migration/tools/verify_site.py --site _site --repeat` | `migration/build/verify_report.json` |
 
-Порядок работы с изменениями: править только `migration/` и `site/` через генератор,
-не редактировать готовые HTML вручную. Общие блоки страниц (шапка с меню, подвал,
-алфавит со ссылками, хлебные крошки, карточки, переходы между выставками, `<head>`
-и CSS) определены один раз в `migration/templates/` и `migration/tools/site_template.py`;
-`verify_site.py` сверяет их на каждой странице и запрещает устаревшую разметку
-Word/Joomla. Перед коммитом запускать проверку; публикация идёт
-из `main` через `.github/workflows/deploy-pages.yml` (задачи `build` → `deploy` → `smoke`).
+Устройство сайта (`site/` — проект **Jekyll**, разделение оформления и содержания, принцип DRY):
+- **Шаблоны и оформление** лежат в `site/_layouts/`, `site/_includes/` и `site/assets/site.css`.
+- **Верхнее меню и алфавит** вынесены в `site/_data/navigation.yml` (шаблон `site/_includes/nav.html`) и `site/_data/alphabet.yml` (`site/_includes/letter-nav.html`): изменение пункта меню требует правки только одного файла.
+- **Содержание** хранится без HTML-каркаса оформления: статьи выставок — в `site/_exhibitions/<slug>.html`, разделы букв — в `site/_sections/<letter>.html`, введение — в `site/index.html`, заключение — в `site/conclusion/index.html`.
+- Сборочный каталог `_site/` исключён из Git; публикация идёт из `main` через `.github/workflows/deploy-pages.yml` (задачи `build` → `deploy` → `smoke`).

@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="{{ site.lang | default: 'ru' }}">
+<head>
+{% include head.html %}
+</head>
+<body>
+<a class="skip" href="#content">К содержанию</a>
+{% include header.html %}
+<main id="content">
+  <div class="wrap">
+{{ content }}
+  </div>
+</main>
+{% include footer.html %}
+</body>
+</html>

@@ -1,0 +1,10 @@
+---
+layout: default
+---
+{% assign section_doc = site.sections | where: "letter", page.letter | first %}
+{% include breadcrumbs.html index=true section=section_doc %}
+<article>
+  <h1>{{ page.title | escape }}</h1>
+{{ content }}
+  {% include pager.html %}
+</article>

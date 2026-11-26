@@ -1,0 +1,9 @@
+---
+layout: default
+---
+{% assign group = site.exhibitions | where: "letter", page.letter | sort: "order" %}
+{% include breadcrumbs.html index=true %}
+<h1>{{ page.title | escape }}</h1>
+<p class="lead">Выставок в разделе: {{ group.size }}. Полные описания — на отдельных страницах.</p>
+{% include letter-nav.html %}
+{% include cards.html items=group %}

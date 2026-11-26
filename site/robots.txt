@@ -1,4 +1,7 @@
+---
+layout: none
+---
 User-agent: *
 Allow: /
 
-Sitemap: https://r2force.github.io/glossary/sitemap.xml
+Sitemap: {{ '/sitemap.xml' | absolute_url }}

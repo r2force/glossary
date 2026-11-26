@@ -1,19 +1,19 @@
 name: Build check (glossary)
 
-# Проверка сборки на ветке разработки: те же шаги, что и в deploy-pages.yml,
-# но без публикации. Нужна, чтобы убедиться, что сайт собирается и проходит
-# проверки на runner с реальными файлами Git LFS.
+# Проверка сборки Jekyll на ветке разработки и в PR: те же шаги, что и в
+# deploy-pages.yml, но без публикации.
 on:
   push:
     branches:
-      - arena/47e5cade-glossary
-      - arena/e7d86b03-glossary
+      - 'arena/**'
     paths:
       - 'site/**'
       - 'migration/tools/**'
-      - 'migration/templates/**'
       - '.github/workflows/build-check.yml'
       - '.github/workflows/deploy-pages.yml'
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
@@ -28,31 +28,38 @@ jobs:
         with:
           lfs: true
 
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+          working-directory: site
+          bundler-cache: true
+
+      - name: Build Jekyll site
+        run: |
+          BUNDLE_GEMFILE=site/Gemfile bundle exec jekyll build \
+            --source site --destination _site --strict_front_matter
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
 
-      - name: Install builder dependencies
-        run: python -m pip install --quiet beautifulsoup4 lxml
-
-      - name: Rebuild site from the registry
-        run: |
-          python migration/tools/extract.py --from-registry
-          python migration/tools/build_site.py
+      - name: Install verifier dependencies
+        run: python -m pip install --quiet beautifulsoup4 lxml pyyaml
 
       - name: Verify images are real (not LFS pointers)
         run: python migration/tools/verify_media.py
 
-      - name: Verify site content, links and SEO
-        run: python migration/tools/verify_site.py --repeat
+      - name: Verify Jekyll source, built HTML, links and SEO
+        run: python migration/tools/verify_site.py --site _site --repeat
 
-      - name: Confirm site has no LFS pointers
+      - name: Confirm built _site has no LFS pointers
         run: |
           python - <<'PY'
           import os, sys
           bad = []
-          for dirpath, _, names in os.walk("site"):
+          for dirpath, _, names in os.walk("_site"):
               for name in names:
                   if not name.lower().endswith((".jpg", ".jpeg", ".png", ".gif")):
                       continue
@@ -61,7 +68,7 @@ jobs:
                       if fh.read(40).startswith(b"version https://git-lfs"):
                           bad.append(path)
           if bad:
-              print("В site/ остались LFS-указатели:", *bad[:5], sep="\n  ")
+              print("В _site/ остались LFS-указатели:", *bad[:5], sep="\n  ")
               sys.exit(1)
-          print("Все иллюстрации в site/ — реальные файлы")
+          print("Все иллюстрации в _site/ — реальные файлы")
           PY

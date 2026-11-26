@@ -82,29 +82,37 @@ Joomla («Автор: Administrator | дата»), кнопки печати и 
 подключает только как миниатюры. Точный перечень — в `migration/build/build_report.json`
 (поле `unused_images`, 13 записей полного размера).
 
-## 4. Устройство сайта
+## 4. Устройство сайта (Jekyll)
+
+Исходники сайта в `site/` организованы как проект **Jekyll** с разделением оформления и содержания (DRY):
 
 ```text
 site/
-├── index.html                 главная: указатель А–Я и введение
-├── contents/index.html        алфавитный указатель со всеми 271 ссылками
-├── conclusion/index.html      заключение
-├── sections/<буква>/          25 страниц разделов (краткие фрагменты и переходы)
-├── exhibitions/<slug>/        271 самостоятельная страница выставки
-├── images/…                   исходные файлы репозитория
-├── assets/site.css            минимальное оформление
-├── sitemap.xml, robots.txt, 404.html
+├── _config.yml                конфигурация сайта, коллекций и базового префикса /glossary
+├── Gemfile                    зависимость Jekyll 4.3
+├── _data/
+│   ├── navigation.yml         пункты верхнего меню (меняются в одном файле)
+│   └── alphabet.yml           буквы указателя А–Я
+├── _layouts/                  каркасы страниц (default, home, article, section, exhibition)
+├── _includes/                 общие блоки (head, header, nav, footer, breadcrumbs, letter-nav, cards, pager)
+├── _exhibitions/<slug>.html   271 выставка: только метаданные и авторский текст/иллюстрации
+├── _sections/<буква>.html     25 разделов по буквам: только метаданные раздела
+├── index.html                 главная: только метаданные и текст введения
+├── contents/index.html        алфавитный указатель (формируется шаблоном Liquid по коллекциям)
+├── conclusion/index.html      заключение: только метаданные и текст заключения
+├── images/…                   исходные файлы репозитория (Git LFS)
+├── assets/site.css            стили оформления
+└── sitemap.xml, robots.txt, 404.html
 ```
 
-- Каждая выставка — отдельный HTML-файл и собственный постоянный URL вида
-  `https://r2force.github.io/glossary/exhibitions/<slug>/`.
-- Страницы разделов содержат названия и краткие фрагменты со ссылками на полные материалы,
-  поэтому дублирования полного текста нет.
-- Все ссылки на ресурсы относительные; сайт работает и в подпапке `/glossary/`, и локально.
-- Генератор: `migration/tools/build_site.py`; повторный запуск даёт те же файлы
-  (проверяется `verify_site.py --repeat`).
-- Страницы содержат блок «соседние выставки» внутри буквы и хлебные крошки, что связывает
-  материалы в сеть внутренних ссылок.
+- При сборке (`jekyll build --source site --destination _site`) каждая выставка получает
+  собственный статический HTML-файл и постоянный URL `https://r2force.github.io/glossary/exhibitions/<slug>/`.
+- Шаблоны и меню лежат непосредственно в `site/` (`_layouts/`, `_includes/`, `_data/navigation.yml`):
+  любая правка меню, шапки, подвала или карточек затрагивает один файл, а не сотни страниц.
+- Содержательные файлы (`_exhibitions/`, `_sections/`, `index.html`, `conclusion/index.html`)
+  не содержат повторяющегося HTML-каркаса (что проверяется `verify_site.py`).
+- Все внутренние ссылки формируются через фильтр `relative_url` и корректно работают под префиксом `/glossary/`.
+- Страницы выставок автоматически связываются хлебными крошками и блоком «соседние выставки» внутри буквы.
 
 ## 5. SEO
 
@@ -125,10 +133,10 @@ Workflow `.github/workflows/deploy-pages.yml`:
 
 1. Запуск при push в `main` и по `workflow_dispatch`.
 2. Checkout с `lfs: true` — получает реальные байты иллюстраций.
-3. Пересборка страниц из реестра (`extract.py --from-registry`, `build_site.py`).
-4. Проверки: реальность изображений, полнота текста, ссылки, SEO, повторяемость сборки,
-   отсутствие LFS-указателей в `site/`.
-5. Загрузка в Pages **только** каталога `site/`.
+3. Сборка Jekyll из `site/` в `_site/` (`bundle exec jekyll build --source site --destination _site --strict_front_matter`).
+4. Проверки: реальность изображений, архитектура Jekyll (DRY), полнота текста, ссылки, SEO,
+   повторяемость сборки, отсутствие LFS-указателей в `_site/`.
+5. Загрузка в Pages **только** собранного каталога `_site/`.
 6. Задача `deploy` с `permissions: pages: write, id-token: write`.
 7. Задача `smoke`: проверка опубликованного сайта по HTTPS.
 
@@ -192,16 +200,18 @@ Workflow `.github/workflows/deploy-pages.yml`:
 ## 9. Созданные файлы
 
 ```text
-.github/workflows/deploy-pages.yml    публикация site/ в Pages + smoke-проверка
-.github/workflows/build-check.yml     проверка сборки на ветке разработки
+.github/workflows/deploy-pages.yml    сборка Jekyll в _site/, публикация в Pages + smoke-проверка
+.github/workflows/build-check.yml     проверка сборки Jekyll на ветке разработки и в PR
 .github/workflows/harvest-source.yml  одноразовый сбор источника (GitHub Actions)
 .github/workflows/fetch-lfs.yml       одноразовая проверка оригиналов в Git LFS
+site/_config.yml, site/Gemfile        конфигурация и зависимости Jekyll
+site/_layouts/, site/_includes/       шаблоны страниц и общие блоки (включая nav.html)
+site/_data/navigation.yml, alphabet.yml данные верхнего меню и алфавита
+site/_exhibitions/, site/_sections/   коллекции содержательных материалов без каркаса оформления
 migration/tools/harvest.py            обход источника с кэшем
 migration/tools/extract.py            разбор HTML в реестр
-migration/tools/build_site.py         генератор сайта
-migration/tools/site_template.py      общие блоки разметки (DRY)
-migration/templates/                 шаблоны страниц, частичных блоков и CSS
-migration/tools/verify_site.py        независимая проверка сайта
+migration/tools/build_site.py         экспорт содержательных материалов реестра в коллекции Jekyll
+migration/tools/verify_site.py        независимая проверка исходников Jekyll и собранного _site/
 migration/tools/verify_media.py       проверка изображений и LFS
 migration/source/                     сырые страницы источника (16 МБ, доказательство переноса)
 migration/build/registry.json         реестр материалов
@@ -215,11 +225,17 @@ migration/REPORT_FINAL.md             этот отчёт
 ## 10. Как воспроизвести
 
 ```bash
-python -m pip install beautifulsoup4 lxml requests
-python migration/tools/extract.py            # разбор migration/source в реестр
-python migration/tools/build_site.py         # сборка site/
+bundle exec --gemfile=site/Gemfile jekyll build --source site --destination _site --strict_front_matter
+python -m pip install beautifulsoup4 lxml pyyaml
 python migration/tools/verify_media.py       # изображения (нужен git lfs pull)
-python migration/tools/verify_site.py --repeat
+python migration/tools/verify_site.py --site _site --repeat
+```
+
+При необходимости заново выгрузить только содержательные материалы из сырого архива источника:
+
+```bash
+python migration/tools/extract.py            # разбор migration/source в реестр
+python migration/tools/build_site.py         # выгрузка контента в site/_exhibitions и site/_sections
 ```
 
 Полный обход источника заново (только на машине с доступом в интернет):
@@ -228,14 +244,18 @@ python migration/tools/verify_site.py --repeat
 python migration/tools/harvest.py
 ```
 
-## 11. Чистка разметки (2026-11-26)
+## 11. Перевод на Jekyll и чистка разметки (2026-11-26)
 
-Общие элементы страниц больше не повторяются в коде генератора: шапка с меню,
-подвал, алфавит со ссылками, хлебные крошки, карточки, переходы между выставками,
-`<head>` и стили вынесены в `migration/templates/` и собираются через
-`migration/tools/site_template.py`. Опубликованный HTML остаётся статическим и
-самодостаточным (без JS-инклюдов), а `verify_site.py` сверяет шапку, подвал и
-алфавит каждой страницы с общими шаблонами.
+Сайт переведён на **Jekyll** с переносом всех шаблонов в `site/`:
+шапка, верхнее меню (`site/_includes/nav.html` + `site/_data/navigation.yml`),
+подвал, алфавит со ссылками (`site/_includes/letter-nav.html` + `site/_data/alphabet.yml`),
+хлебные крошки, карточки, переходы между выставками, `<head>` и стили находятся
+в `site/_layouts/`, `site/_includes/` и `site/assets/site.css`. Содержательные
+материалы хранятся в коллекциях `site/_exhibitions/` и `site/_sections/`, а также
+в `site/index.html` и `site/conclusion/index.html` без повторяющегося HTML-каркаса.
+Собранный HTML остаётся статическим и самодостаточным (без JS-инклюдов), а
+`verify_site.py` проверяет и отсутствие каркаса в контенте `site/`, и единообразие
+шапки, меню, подвала и алфавита в собранном `_site/`.
 
 Из `site/` удалены элементы оформления старого Joomla-сайта: восемь пустых
 `index.html` в каталогах миниатюр (`<body bgcolor="#FFFFFF">`, без doctype),

@@ -1,0 +1,10 @@
+<ul class="letter-nav" aria-label="Алфавитный указатель">
+{%- for letter in site.data.alphabet -%}
+  {%- assign sec = site.sections | where: "letter", letter | first -%}
+  {%- if sec -%}
+  <li><a href="{{ sec.url | relative_url }}"{% if page.collection == "sections" and page.letter == letter %} aria-current="page"{% endif %}>{{ letter }}</a></li>
+  {%- else -%}
+  <li><span class="off">{{ letter }}</span></li>
+  {%- endif -%}
+{%- endfor -%}
+</ul>

@@ -1,0 +1,33 @@
+{%- if page.title -%}
+  {%- capture page_title -%}{{ page.title }} — {{ site.title }}{%- endcapture -%}
+{%- else -%}
+  {%- capture page_title -%}{{ site.title }}: {{ site.subtitle }}{%- endcapture -%}
+{%- endif -%}
+{%- if page.description -%}
+  {%- assign meta_desc = page.description -%}
+{%- elsif page.collection == "sections" -%}
+  {%- assign section_items = site.exhibitions | where: "letter", page.letter -%}
+  {%- capture meta_desc -%}Книжные выставки на букву «{{ page.letter }}»: {{ section_items.size }} описаний из глоссария «Книга – Выставка – Читатель».{%- endcapture -%}
+{%- else -%}
+  {%- assign meta_desc = page.content | replace: "</p>", "</p> " | replace: "</li>", "</li> " | replace: "</td>", "</td> " | strip_html | normalize_whitespace | strip | truncatewords: 24, "…" -%}
+{%- endif -%}
+{%- if meta_desc == "" -%}
+  {%- assign meta_desc = site.title -%}
+{%- endif -%}
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ page_title | escape_once }}</title>
+<meta name="description" content="{{ meta_desc | escape_once }}">
+<link rel="canonical" href="{{ page.url | absolute_url | escape }}">
+<meta property="og:type" content="article">
+<meta property="og:title" content="{{ page_title | escape_once }}">
+<meta property="og:description" content="{{ meta_desc | escape_once }}">
+<meta property="og:url" content="{{ page.url | absolute_url | escape }}">
+<meta property="og:locale" content="ru_RU">
+<link rel="stylesheet" href="{{ '/assets/site.css' | relative_url }}">
+{%- if page.collection == "exhibitions" %}
+{%- assign website_name = site.title | append: ": " | append: site.subtitle %}
+{%- assign website_url = "/" | absolute_url %}
+{%- assign main_entity_url = page.url | absolute_url %}
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":{{ page.title | jsonify }},"inLanguage":"ru","isPartOf":{"@type":"WebSite","name":{{ website_name | jsonify }},"url":{{ website_url | jsonify }}},"mainEntityOfPage":{{ main_entity_url | jsonify }}}</script>
+{%- endif %}
