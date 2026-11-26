@@ -11,6 +11,7 @@ if [[ -z "${PYTHON:-}" ]]; then
 fi
 export BUNDLE_GEMFILE="$PWD/site/Gemfile"
 "$PYTHON" -m unittest discover -s tests
+node --test tests/search.test.cjs
 bundle exec jekyll build --source site --destination _site --strict_front_matter
 "$PYTHON" scripts/verify_media.py --site _site
 "$PYTHON" scripts/verify_site.py --site _site --repeat

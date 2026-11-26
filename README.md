@@ -6,7 +6,7 @@
 
 ## Окружение
 
-Нужны Python 3.12 или новее, Ruby 3.3, Bundler и Git LFS. Версии для разработки указаны в `.python-version` и `.ruby-version`. Все команды ниже выполняются из корня репозитория.
+Нужны Python 3.12 или новее, Ruby 3.3, Bundler, Node.js 20 или новее и Git LFS. Версии для разработки указаны в `.python-version` и `.ruby-version`. Все команды ниже выполняются из корня репозитория. Node.js используется для тестов поиска; npm-зависимости не требуются.
 
 ```bash
 git lfs install
@@ -30,12 +30,15 @@ PYTHON=.venv/bin/python scripts/check.sh
 
 ```bash
 .venv/bin/python -m unittest discover -s tests
+node --test tests/search.test.cjs
 BUNDLE_GEMFILE=site/Gemfile bundle exec jekyll build --source site --destination _site --strict_front_matter
 .venv/bin/python scripts/verify_media.py --site _site
 .venv/bin/python scripts/verify_site.py --site _site --repeat
 ```
 
 Проверки сопоставляют исходники Jekyll с готовым HTML, проверяют локальные ссылки, изображения, метаданные, sitemap, префикс проекта и повторяемость сборки. Они проверяют текущее содержание репозитория; правильность редакторских изменений оценивается при просмотре diff и затронутых страниц.
+
+Поиск доступен в шапке каждой страницы и по `Ctrl/⌘ + K`. Он ищет по полному тексту всех выставок, введения и заключения; при вводе показывает заголовки и фрагменты с выделением совпадений. Несколько слов должны встречаться в одной статье; регистр и различие `е`/`ё` не учитываются. При переходе из результата совпадения выделяются и в самой статье. Индекс `site/assets/search.json` создаётся Jekyll из исходников автоматически.
 
 Для просмотра с действующим префиксом `/glossary/`:
 

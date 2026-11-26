@@ -1,7 +1,7 @@
 <dialog class="search-dialog" aria-labelledby="search-title" data-search-index="{{ '/assets/search.json' | relative_url }}">
   <div class="search-heading"><h2 id="search-title">Поиск по глоссарию</h2><button type="button" data-close-search aria-label="Закрыть поиск">×</button></div>
-  <label for="search-input">Название или описание выставки</label>
-  <input id="search-input" type="search" placeholder="Начните вводить название…" autocomplete="off">
-  <p class="search-status" role="status"></p>
-  <ul class="search-results"></ul>
+  <label for="search-input">Поиск по названиям и полному тексту всех статей</label>
+  <input id="search-input" type="search" placeholder="Введите слово или несколько слов…" autocomplete="off" aria-controls="search-results" aria-describedby="search-status">
+  <p class="search-status" id="search-status" role="status" aria-live="polite" aria-atomic="true"></p>
+  <ul class="search-results" id="search-results" aria-label="Найденные статьи"></ul>
 </dialog>
