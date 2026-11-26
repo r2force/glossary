@@ -1,7 +1,7 @@
 ---
 layout: default
 ---
-{% unless page.url == '/conclusion/' %}{% include breadcrumbs.html %}{% endunless %}
+{% include breadcrumbs.html %}
 <article class="article-card{% if page.url == '/conclusion/' %} conclusion{% endif %}">
   {% if page.url == '/conclusion/' %}<div class="article-eyebrow">Заключение · Коллектив авторов МБУ «Централизованная система детских библиотек» ГО г. Уфа РБ</div>{% endif %}
   <h1>{{ page.title | escape }}</h1>

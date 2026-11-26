@@ -261,6 +261,54 @@ class SiteVerificationTests(unittest.TestCase):
                 self.assert_error('разрешён только локальный assets/site.js с defer')
         p.write_text(original)
 
+    def enable_metrika(self):
+        self.config['yandex_metrika_id'] = 110935159
+        self.write(self.source, '_config.yml', yaml.safe_dump(self.config))
+        template = (Path(__file__).resolve().parents[1] / 'site/_includes/yandex-metrika.html').read_text()
+        self.write(self.source, '_includes/yandex-metrika.html', template)
+        code = template.split('<script>', 1)[1].split('</script>', 1)[0].replace('{{ site.yandex_metrika_id }}', '110935159')
+        markup = '<script>' + code + '</script><noscript><div><img class="metrika-pixel" src="https://mc.yandex.ru/watch/110935159" alt=""></div></noscript>'
+        for path in self.pages:
+            p = self.built / path
+            p.write_text(p.read_text().replace('<body>', '<body>' + markup))
+
+    def test_configured_metrika_passes(self):
+        self.enable_metrika()
+        self.assertEqual([], self.errors())
+
+    def test_missing_or_duplicate_metrika_fails(self):
+        self.enable_metrika()
+        p = self.built / 'index.html'
+        original = p.read_text()
+        self.mutate('index.html', lambda soup: soup.select_one('script:not([type])').decompose())
+        self.assert_error('должен быть один счётчик Метрики')
+        p.write_text(original)
+        script = str(BeautifulSoup(original, 'html.parser').select_one('script:not([type])'))
+        p.write_text(original.replace('</body>', script + '</body>'))
+        self.assert_error('должен быть один счётчик Метрики')
+
+    def test_metrika_pixel_cannot_replace_an_article_image(self):
+        self.enable_metrika()
+        self.mutate('exhibitions/first/index.html', lambda soup: soup.select_one('article img').__setitem__('src', 'https://mc.yandex.ru/watch/110935159'))
+        self.assert_error('изображение должно иметь локальный src')
+
+    def test_wrong_metrika_id_is_rejected(self):
+        self.enable_metrika()
+        p = self.built / 'index.html'
+        p.write_text(p.read_text().replace("ym(110935159, 'init'", "ym(999, 'init'"))
+        self.assert_error('разрешён только локальный assets/site.js')
+        self.assert_error('должен быть один счётчик Метрики')
+
+    def test_404_can_be_excluded_from_indexing(self):
+        p = self.built / '404.html'
+        p.write_text(p.read_text().replace('</head>', '<meta name="robots" content="noindex, follow"></head>'))
+        self.assertEqual([], self.errors())
+
+    def test_malformed_json_ld_is_rejected_on_home(self):
+        p = self.built / 'index.html'
+        p.write_text(p.read_text().replace('</head>', '<script type="application/ld+json">{broken}</script></head>'))
+        self.assert_error('некорректный JSON-LD')
+
     def test_repeat_accepts_identical_output(self):
         report = self.root / 'report.json'
         command = shlex.join([sys.executable, '-c', 'pass'])

@@ -32,7 +32,7 @@ PYTHON=.venv/bin/python scripts/check.sh
 
 ```bash
 .venv/bin/python -m unittest discover -s tests
-node --test tests/search.test.cjs
+node --test tests/*.test.cjs
 BUNDLE_GEMFILE=site/Gemfile bundle exec jekyll build --source site --destination _site --strict_front_matter
 .venv/bin/python scripts/verify_media.py --site _site
 .venv/bin/python scripts/verify_site.py --site _site --repeat
@@ -96,3 +96,20 @@ order: 1000
 `.github/workflows/build-check.yml` проверяет pull request в `main`. После push в `main` workflow `.github/workflows/deploy-pages.yml` собирает сайт, выполняет проверки, загружает только `_site/` как Pages artifact и проверяет опубликованные HTTPS-адреса. Workflow также поддерживает ручной запуск.
 
 В настройках репозитория источник GitHub Pages — GitHub Actions, пользовательский домен — `glossary.ufacsdb.ru`. В `site/_config.yml` заданы `url: "https://glossary.ufacsdb.ru"` и пустой `baseurl`: сайт работает из корня домена. Проверка в workflow использует адрес, возвращённый GitHub Pages при публикации, с принудительным HTTPS. `_site/` не коммитится.
+
+## Поисковая оптимизация и аналитика
+
+На всех страницах установлен счётчик Яндекс Метрики **110935159** из `yandex_metrika_id` в `site/_config.yml`. Подключение асинхронное, с картой кликов, точным показателем отказов, отслеживанием ссылок и резервным noscript-пикселем. Параметры соответствуют предоставленному коду; Вебвизор не включён. Код хранится в `_includes/yandex-metrika.html`.
+
+Общий `head.html` формирует уникальные title и description, canonical, Open Graph и Twitter Cards. Для страницы можно задать `seo_title`, `description`, `image`, `image_alt`; видимый авторский заголовок при этом сохраняется. У статей описание выводится из авторского текста, у буквенных разделов — из состава раздела. `_plugins/seo_filters.rb` очищает описание, ограничивает его длину и выбирает оригинал иллюстрации вместо миниатюры. Если иллюстрации нет, используется фотография из `social_image`. Даты публикации и изменения не выдумываются.
+
+`structured-data.html` формирует WebSite, Article с организацией-составителем, CollectionPage с реальным списком статей и BreadcrumbList по видимой навигации. Sitemap содержит все доступные для индексации страницы и оригиналы изображений; 404 имеет `noindex, follow` и не входит в sitemap. Поиск остаётся доступным через HTML-ссылки, а страницы результатов в виде отдельных индексируемых URL не создаются. Проверки сверяют метаданные, JSON-LD, состав каталогов, хлебные крошки, изображения и единственное подключение Метрики.
+
+После публикации владельцу сайта нужно:
+
+1. Проверить посещения в кабинете Метрики и исключить собственные визиты, если это требуется для отчётов. Код на сайте не подтверждает права доступа к кабинету и не доказывает поступление данных в отчёты.
+2. Добавить `https://glossary.ufacsdb.ru/` в [Яндекс Вебмастер](https://yandex.ru/support/webmaster/ru/service/rights) и [Google Search Console](https://support.google.com/webmasters/answer/9008080), если сайт ещё не подключён. Для подтверждения через метатег достаточно сохранить выданные сервисами значения в `yandex_verification` и `google_site_verification` в `_config.yml`; значения нельзя подменять номером счётчика.
+3. Отправить `https://glossary.ufacsdb.ru/sitemap.xml` в разделе Sitemap обоих сервисов и проверить индексацию нескольких статей. [Инструкция Яндекса](https://yandex.ru/support/webmaster/ru/indexing-options/sitemap), [инструкция Google](https://developers.google.com/search/docs/crawling-indexing/sitemaps/build-sitemap).
+4. После накопления данных смотреть поисковые запросы, показы, переходы и вовлечённость. По этим данным выбирать статьи для содержательного дополнения примерами, анонсировать материалы на сайте ЦСДБ и в профессиональных библиотечных сообществах.
+
+Изменения улучшают техническую доступность и описание материалов; позиции, выбор сниппета и сроки переиндексации определяет поисковая система. Подключение кабинетов и подтверждение владения требуют учётной записи владельца и не выполняются одной установкой Метрики.

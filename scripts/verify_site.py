@@ -218,6 +218,23 @@ def verify(source, built):
             rel += '/index.html'
         return rel, urllib.parse.unquote(parsed.fragment)
 
+    counter_id = config.get('yandex_metrika_id')
+    metrika_code = None
+    metrika_src = None
+    if counter_id is not None:
+        if type(counter_id) is not int or counter_id <= 0:
+            errors.append('yandex_metrika_id должен быть положительным целым числом')
+        else:
+            metrika_src = f'https://mc.yandex.ru/watch/{counter_id}'
+            try:
+                template = (source / '_includes/yandex-metrika.html').read_text()
+                match = re.search(r'<script>(.*?)</script>', template, re.S)
+                if not match:
+                    raise ValueError('нет кода счётчика')
+                metrika_code = match[1].replace('{{ site.yandex_metrika_id }}', str(counter_id)).strip()
+            except (OSError, ValueError) as exc:
+                errors.append(f'Метрика: {exc}')
+
     titles, descriptions = {}, {}
     graph = {page: set() for page in pages}
     header_signatures, footer_signatures = set(), set()
@@ -259,11 +276,59 @@ def verify(source, built):
         if len(canonical_tags) != 1 or canonical_tags[0].get('href') != expected_url:
             errors.append(f'{page}: canonical должен быть {expected_url}')
         for meta in soup.find_all('meta'):
-            if (meta.get('name') or '').lower() in ('robots', 'googlebot', 'bingbot') and re.search(r'\b(noindex|none)\b', meta.get('content', ''), re.I):
+            if (meta.get('name') or '').lower() in ('robots', 'googlebot', 'bingbot') and re.search(r'\b(noindex|none)\b', meta.get('content', ''), re.I) and page != '404.html':
                 errors.append(f'{page}: запрещён noindex')
+        if page == '404.html' and docs.get(page, {}).get('fm', {}).get('robots'):
+            if not soup.select_one('meta[name="robots"][content="noindex, follow"]'):
+                errors.append(f'{page}: страница ошибки должна иметь noindex, follow')
+        metrika_scripts = []
         for script in soup.select('script:not([type="application/ld+json"])'):
+            if metrika_code and not script.get('src') and script.get_text().strip() == metrika_code:
+                metrika_scripts.append(script)
+                continue
             if script.get('src') != baseurl + '/assets/site.js' or script.get_text().strip() or not script.has_attr('defer') or not exact_file(built, 'assets/site.js'):
-                errors.append(f'{page}: разрешён только локальный assets/site.js с defer')
+                errors.append(f'{page}: разрешён только локальный assets/site.js с defer и настроенная Метрика')
+        if metrika_code:
+            pixels = [img for img in soup.select('noscript img') if img.get('src') == metrika_src and img.get('alt') == '' and img.get('class') == ['metrika-pixel']]
+            if len(metrika_scripts) != 1 or len(pixels) != 1:
+                errors.append(f'{page}: должен быть один счётчик Метрики и один noscript-пиксель')
+        structured = []
+        for script in soup.select('script[type="application/ld+json"]'):
+            try:
+                data = json.loads(script.string or script.get_text())
+                if not isinstance(data, dict) or data.get('@context') != 'https://schema.org':
+                    raise ValueError('ожидается объект schema.org')
+                structured.append(data)
+            except (ValueError, TypeError) as exc:
+                errors.append(f'{page}: некорректный JSON-LD: {exc}')
+        if config.get('social_image'):
+            for key, value in [('og:title', title), ('og:description', description), ('og:url', expected_url), ('og:locale', 'ru_RU')]:
+                tags = soup.select(f'meta[property="{key}"]')
+                if len(tags) != 1 or tags[0].get('content') != value:
+                    errors.append(f'{page}: неверный {key}')
+            image = soup.select_one('meta[property="og:image"]')
+            image_url = image.get('content', '') if image else ''
+            try:
+                target = local_target(page, image_url)
+                if not image_url.startswith(site_url + '/') or not target or not exact_file(built, target[0]):
+                    raise ValueError('изображение не найдено на сайте')
+            except ValueError as exc:
+                errors.append(f'{page}: og:image: {exc}')
+            twitter = soup.select_one('meta[name="twitter:image"]')
+            if not twitter or twitter.get('content') != image_url:
+                errors.append(f'{page}: twitter:image не совпадает с og:image')
+            if page not in ('index.html', '404.html'):
+                crumbs = [node for node in structured if node.get('@type') == 'BreadcrumbList']
+                visible = [(a.get('href'), normalize(a.get_text())) for a in soup.select('nav.crumbs a')]
+                visible.append((expected_url, normalize(soup.h1.get_text()) if soup.h1 else ''))
+                expected_crumbs = [(urllib.parse.urljoin(site_url + '/', href), name) for href, name in visible]
+                items = crumbs[0].get('itemListElement', []) if len(crumbs) == 1 else []
+                if [(item.get('item'), item.get('name')) for item in items] != expected_crumbs or [item.get('position') for item in items] != list(range(1, len(expected_crumbs) + 1)):
+                    errors.append(f'{page}: BreadcrumbList не соответствует видимой навигации')
+            if page == 'index.html':
+                websites = [node for node in structured if node.get('@type') == 'WebSite']
+                if len(websites) != 1 or websites[0].get('url') != site_url + '/':
+                    errors.append(f'{page}: отсутствует WebSite с правильным URL')
         headers, footers = soup.select('header.site'), soup.select('footer.site')
         if len(headers) != 1 or len(footers) != 1:
             errors.append(f'{page}: должен быть один header.site и footer.site')
@@ -299,6 +364,8 @@ def verify(source, built):
             href = node.get(attr) or ''
             try:
                 target = local_target(page, href)
+                if node.name == 'img' and metrika_src and href == metrika_src and node.find_parent('noscript') and node.get('alt') == '' and node.get('class') == ['metrika-pixel']:
+                    continue
                 if node.name == 'img' and (not target or not href or not normalize(node.get('alt', ''))):
                     raise ValueError(f'изображение должно иметь локальный src и непустой alt: {href}')
                 if target is None:
@@ -335,6 +402,13 @@ def verify(source, built):
             section_url = baseurl + canonical_path(section_path) if section_path else None
             if not section_url or not any(anchor.get('href') == section_url for anchor in soup.select('nav.crumbs a')):
                 errors.append(f'{page}: нет хлебной крошки текущего буквенного раздела')
+        if config.get('social_image') and (doc['collection'] == 'sections' or page == 'contents/index.html'):
+            expected_members = {site_url + canonical_path(path) for path, item in docs.items() if item['collection'] == 'exhibitions' and (page == 'contents/index.html' or item['fm']['letter'] == doc['fm']['letter'])}
+            collections = [node for node in structured if node.get('@type') == 'CollectionPage']
+            listing = collections[0].get('mainEntity', {}) if len(collections) == 1 else {}
+            items = listing.get('itemListElement', [])
+            if listing.get('numberOfItems') != len(expected_members) or {item.get('url') for item in items} != expected_members or len(items) != len(expected_members):
+                errors.append(f'{page}: CollectionPage не соответствует составу каталога')
         if doc['fm'].get('title') and (len(h1s) != 1 or normalize(h1s[0].get_text()) != normalize(doc['fm']['title'])):
             errors.append(f'{page}: h1 не соответствует текущему исходнику')
         compare_content = doc['collection'] == 'exhibitions' or page in ('index.html', 'conclusion/index.html') or (doc['collection'] == 'sections' and doc['body'].strip())
@@ -363,11 +437,11 @@ def verify(source, built):
             except ValueError as exc:
                 errors.append(f'{page}: {exc}')
         if doc['collection'] == 'exhibitions':
-            nodes = soup.select('script[type="application/ld+json"]')
+            nodes = [node for node in structured if node.get('@type') == 'Article']
             try:
                 if len(nodes) != 1:
                     raise ValueError('должен быть один JSON-LD Article')
-                data = json.loads(nodes[0].string or nodes[0].get_text())
+                data = nodes[0]
                 if not isinstance(data, dict) or data.get('@context') != 'https://schema.org' or data.get('@type') != 'Article' or data.get('headline') != doc['fm']['title'] or data.get('inLanguage') != 'ru' or data.get('mainEntityOfPage') != expected_url:
                     raise ValueError('неверные поля JSON-LD Article')
                 website = data.get('isPartOf', {})
@@ -384,6 +458,10 @@ def verify(source, built):
             raise ValueError('неверный корневой элемент sitemap')
         locations = [node.text or '' for node in tree.findall(f'{ns}url/{ns}loc')]
         report['sitemap_urls'] = len(locations)
+        for node in tree.findall('.//{http://www.google.com/schemas/sitemap-image/1.1}loc'):
+            target = local_target('index.html', node.text or '')
+            if not target or not exact_file(built, target[0]):
+                errors.append(f'sitemap: отсутствует изображение {node.text}')
         expected = {site_url + canonical_path(page) for page in docs if page != '404.html'}
         if set(locations) != expected or len(locations) != len(set(locations)):
             errors.append(f'sitemap: множество адресов отличается; отсутствует {sorted(expected - set(locations))[:5]}, лишние {sorted(set(locations) - expected)[:5]}, дубликатов {len(locations) - len(set(locations))}')

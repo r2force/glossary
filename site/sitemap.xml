@@ -2,16 +2,21 @@
 layout: none
 ---
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>{{ '/' | absolute_url | xml_escape }}</loc><priority>1.0</priority></url>
-  <url><loc>{{ '/contents/' | absolute_url | xml_escape }}</loc><priority>0.9</priority></url>
-  <url><loc>{{ '/conclusion/' | absolute_url | xml_escape }}</loc><priority>0.8</priority></url>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+  <url><loc>{{ '/' | absolute_url | xml_escape }}</loc></url>
+  <url><loc>{{ '/contents/' | absolute_url | xml_escape }}</loc></url>
+  <url><loc>{{ '/conclusion/' | absolute_url | xml_escape }}</loc></url>
 {%- assign sorted_sections = site.sections | sort: "order" %}
 {%- for sec in sorted_sections %}
-  <url><loc>{{ sec.url | absolute_url | xml_escape }}</loc><priority>0.7</priority></url>
+  <url><loc>{{ sec.url | absolute_url | xml_escape }}</loc></url>
 {%- endfor %}
 {%- assign sorted_exhibitions = site.exhibitions | sort: "order" %}
 {%- for item in sorted_exhibitions %}
-  <url><loc>{{ item.url | absolute_url | xml_escape }}</loc><priority>0.8</priority></url>
+  <url><loc>{{ item.url | absolute_url | xml_escape }}</loc>
+    {%- assign images = item.content | seo_images -%}
+    {%- for image in images %}
+    <image:image><image:loc>{{ image | absolute_url | xml_escape }}</image:loc></image:image>
+    {%- endfor %}
+  </url>
 {%- endfor %}
 </urlset>

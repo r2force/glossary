@@ -1,39 +1,55 @@
-{%- if page.title -%}
-  {%- capture page_title -%}{{ page.title }} — {{ site.title }}{%- endcapture -%}
+{%- if page.seo_title -%}
+  {%- assign page_title = page.seo_title -%}
+{%- elsif page.collection == "sections" -%}
+  {%- capture page_title -%}Книжные выставки на букву «{{ page.letter }}» — {{ site.seo_title }}{%- endcapture -%}
+{%- elsif page.title -%}
+  {%- capture page_title -%}{{ page.title }} — {{ site.seo_title }}{%- endcapture -%}
 {%- else -%}
   {%- capture page_title -%}{{ site.title }}: {{ site.subtitle }}{%- endcapture -%}
 {%- endif -%}
 {%- if page.description -%}
   {%- assign meta_desc = page.description -%}
 {%- elsif page.collection == "sections" -%}
-  {%- assign section_items = site.exhibitions | where: "letter", page.letter -%}
-  {%- capture meta_desc -%}Книжные выставки на букву «{{ page.letter }}»: {{ section_items.size }} описаний из глоссария «Книга – Выставка – Читатель».{%- endcapture -%}
+  {%- assign section_items = site.exhibitions | where: "letter", page.letter | sort: "order" -%}
+  {%- assign section_titles = section_items | map: "title" | join: "; " -%}
+  {%- capture meta_desc -%}Книжные выставки на букву «{{ page.letter }}»: {{ section_titles }}. Описания и идеи для библиотек.{%- endcapture -%}
 {%- else -%}
-  {%- assign meta_desc = page.content | replace: "</p>", "</p> " | replace: "</li>", "</li> " | replace: "</td>", "</td> " | strip_html | normalize_whitespace | strip | truncatewords: 24, "…" -%}
+  {%- capture meta_desc -%}{{ page.title }}. {{ page.content }}{%- endcapture -%}
 {%- endif -%}
-{%- if meta_desc == "" -%}
-  {%- assign meta_desc = site.title -%}
-{%- endif -%}
+{%- assign meta_desc = meta_desc | seo_excerpt: 180 -%}
+{%- assign page_images = page.content | seo_images -%}
+{%- assign social_image = page.image | default: page_images.first | default: site.social_image -%}
+{%- assign social_alt = page.image_alt | default: page.title | default: site.social_image_alt -%}
+{%- assign canonical_url = page.url | absolute_url -%}
+{%- assign og_type = 'website' -%}
+{%- if page.collection == 'exhibitions' -%}{%- assign og_type = 'article' -%}{%- endif -%}
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{{ page_title | escape_once }}</title>
 <meta name="description" content="{{ meta_desc | escape_once }}">
+<meta name="robots" content="{{ page.robots | default: 'index, follow, max-image-preview:large' | escape }}">
 {% if page.content contains 'data-email' %}<meta name="official-email" content="{{ site.official_email | split: '' | reverse | join: '' | escape }}">{% endif %}
-<link rel="canonical" href="{{ page.url | absolute_url | escape }}">
+{% if site.yandex_verification %}<meta name="yandex-verification" content="{{ site.yandex_verification | escape }}">{% endif %}
+{% if site.google_site_verification %}<meta name="google-site-verification" content="{{ site.google_site_verification | escape }}">{% endif %}
+<link rel="canonical" href="{{ canonical_url | escape }}">
+<link rel="sitemap" type="application/xml" href="{{ '/sitemap.xml' | relative_url }}">
 <link rel="icon" href="{{ '/favicon.ico' | relative_url }}" sizes="16x16 32x32 48x48 64x64">
 <link rel="icon" href="{{ '/favicon.svg' | relative_url }}" type="image/svg+xml" sizes="any">
-<meta property="og:type" content="article">
+<meta property="og:type" content="{{ og_type }}">
+<meta property="og:site_name" content="{{ site.title | escape_once }}">
 <meta property="og:title" content="{{ page_title | escape_once }}">
 <meta property="og:description" content="{{ meta_desc | escape_once }}">
-<meta property="og:url" content="{{ page.url | absolute_url | escape }}">
+<meta property="og:url" content="{{ canonical_url | escape }}">
 <meta property="og:locale" content="ru_RU">
+<meta property="og:image" content="{{ social_image | absolute_url | escape }}">
+<meta property="og:image:alt" content="{{ social_alt | escape_once }}">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{{ page_title | escape_once }}">
+<meta name="twitter:description" content="{{ meta_desc | escape_once }}">
+<meta name="twitter:image" content="{{ social_image | absolute_url | escape }}">
+<meta name="twitter:image:alt" content="{{ social_alt | escape_once }}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400;1,600&amp;family=JetBrains+Mono:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{{ '/assets/site.css' | relative_url }}">
-{%- if page.collection == "exhibitions" %}
-{%- assign website_name = site.title | append: ": " | append: site.subtitle %}
-{%- assign website_url = "/" | absolute_url %}
-{%- assign main_entity_url = page.url | absolute_url %}
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":{{ page.title | jsonify }},"inLanguage":"ru","isPartOf":{"@type":"WebSite","name":{{ website_name | jsonify }},"url":{{ website_url | jsonify }}},"mainEntityOfPage":{{ main_entity_url | jsonify }}}</script>
-{%- endif %}
+{% include structured-data.html %}
