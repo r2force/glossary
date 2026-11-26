@@ -2,6 +2,10 @@
 # Run the same checks locally and in CI; generated output stays outside site/.
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
+# Optional machine-local runtime setup; dependencies stay outside Git.
+if [[ -f .tools/env.sh ]]; then
+  source .tools/env.sh
+fi
 if [[ -z "${PYTHON:-}" ]]; then
   if [[ -x .venv/bin/python ]]; then
     PYTHON=.venv/bin/python
