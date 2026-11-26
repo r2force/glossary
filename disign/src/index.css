@@ -1,0 +1,115 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg-primary: #FAF6F0;
+    --bg-secondary: #F3ECE2;
+    --bg-elevated: #FFFFFF;
+    --text-primary: #1A1817;
+    --text-secondary: #4A443F;
+    --text-muted: #7A7167;
+    --accent-primary: #9E3B24;
+    --accent-primary-hover: #B8462B;
+    --accent-secondary: #C88A32;
+    --accent-tertiary: #2E5A44;
+    --border-hairline: #E2D9CC;
+    --border-strong: #C5B9A8;
+  }
+
+  body {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    overflow-x: hidden;
+  }
+
+  h1, h2, .font-serif-editorial {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+  }
+
+  .font-mono-archival {
+    font-family: 'JetBrains Mono', monospace;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* Subtle tactile paper texture overlay */
+.paper-grain {
+  background-image: radial-gradient(rgba(26, 24, 23, 0.035) 1px, transparent 0);
+  background-size: 24px 24px;
+}
+
+/* Diagonal archival hatching for inactive letters (Ё, Й, Щ, Ъ, Ы, Ь) */
+.inactive-letter-hatch {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 4px,
+    rgba(197, 185, 168, 0.25) 4px,
+    rgba(197, 185, 168, 0.25) 5px
+  );
+}
+
+/* Designer cursor spotlight card */
+.spotlight-card {
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+              border-color 0.28s ease;
+}
+
+.spotlight-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    420px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    rgba(158, 59, 36, 0.07),
+    transparent 45%
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.spotlight-card:hover::before {
+  opacity: 1;
+}
+
+.spotlight-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 32px -10px rgba(26, 24, 23, 0.09),
+              0 4px 12px -2px rgba(158, 59, 36, 0.05);
+  border-color: rgba(158, 59, 36, 0.45);
+}
+
+/* Editorial Drop Cap (Буквица) */
+.editorial-dropcap::first-letter {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  float: left;
+  font-size: 4.1rem;
+  line-height: 0.82;
+  padding-top: 4px;
+  padding-right: 12px;
+  padding-bottom: 2px;
+  font-weight: 700;
+  color: #9E3B24;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #F3ECE2;
+}
+::-webkit-scrollbar-thumb {
+  background: #C5B9A8;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #9E3B24;
+}
