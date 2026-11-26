@@ -125,6 +125,14 @@ jobs:
                       time.sleep(10)
               raise SystemExit(f"{path}: недоступен: {last!r}")
 
+          # CDN обновляется не мгновенно: ждём появления маркеров новой сборки.
+          for attempt in range(18):
+              got, body = get("/")
+              if got == 200 and "Алфавитный указатель" in body.decode("utf-8", "replace"):
+                  break
+              print(f"ожидание публикации, попытка {attempt + 1}")
+              time.sleep(10)
+
           failures = []
           for path, status, needle in checks:
               try:
@@ -133,25 +141,35 @@ jobs:
                   failures.append(str(exc))
                   continue
               text = body.decode("utf-8", "replace")
-              flag = "ok " if got == status and needle in text else "FAIL"
-              print(f"{flag} {got} {path}")
-              if got != status or needle not in text:
+              ok = got == status and needle in text
+              print(("ok  " if ok else "FAIL ") + f"{got} {path}")
+              if not ok:
                   failures.append(f"{path}: {got}, маркер найден: {needle in text}")
 
           for path in (IMAGE, THUMB):
               got, body = get(path)
               is_jpeg = body[:2] == b"\xff\xd8"
-              print(f"{'ok ' if got == 200 and is_jpeg else 'FAIL'} {got} {path} "
-                    f"({len(body)} байт, jpeg={is_jpeg})")
+              line = "ok  " if got == 200 and is_jpeg else "FAIL "
+              print(f"{line}{got} {path} ({len(body)} байт, jpeg={is_jpeg})")
               if got != 200 or not is_jpeg or len(body) < 2000:
                   failures.append(f"{path}: изображение не отдано как JPEG")
 
+          # GitHub Pages отдаёт собственную страницу 404; главное — что
+          # неизвестный адрес не возвращает 200 и не считается страницей сайта.
           got, body = get("/this-page-does-not-exist-12345/")
           text = body.decode("utf-8", "replace")
-          not_found = got == 404 and "Страница не найдена" in text
-          print(f"{'ok ' if not_found else 'FAIL'} {got} неизвестный адрес")
+          not_found = got == 404
+          print(("ok  " if not_found else "FAIL ")
+                + f"{got} неизвестный адрес"
+                + (" (своя страница)" if "Страница не найдена" in text else ""))
           if not not_found:
               failures.append(f"404: получен {got}")
+
+          got, body = get("/404.html")
+          own_404 = got == 200 and "Страница не найдена" in body.decode("utf-8", "replace")
+          print(("ok  " if own_404 else "FAIL ") + f"{got} /404.html")
+          if not own_404:
+              failures.append("/404.html: своя страница не отдаётся")
 
           if failures:
               print("НЕУДАЧИ:", *failures, sep="\n  ")
