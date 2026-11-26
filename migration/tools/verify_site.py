@@ -299,13 +299,13 @@ def main() -> int:
         if path not in page_set:
             errors.append(f"нет страницы раздела {path}")
 
-    for path in ("index.html", "introduction/index.html", "conclusion/index.html",
+    for path in ("index.html", "conclusion/index.html",
                  "contents/index.html", "404.html"):
         if path not in page_set:
             errors.append(f"нет обязательной страницы {path}")
 
-    # --- введение и заключение текстом
-    for key, path in (("intro", "introduction/index.html"),
+    # --- введение (на главной) и заключение текстом
+    for key, path in (("intro", "index.html"),
                       ("conclusion", "conclusion/index.html")):
         with open(os.path.join(SITE, path), encoding="utf-8") as fh:
             result = normalize(BeautifulSoup(fh.read(), "html.parser").get_text(" "))
