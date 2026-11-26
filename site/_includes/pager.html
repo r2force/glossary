@@ -13,4 +13,21 @@
     {%- endunless -%}
   {%- endif -%}
 {%- endfor -%}
-<nav class="pager" aria-label="Соседние выставки"><span>{% if prev_item %}← <a href="{{ prev_item.url | relative_url }}">{{ prev_item.title | escape }}</a>{% endif %}</span><span>{% if next_item %}<a href="{{ next_item.url | relative_url }}">{{ next_item.title | escape }}</a> →{% endif %}</span></nav>
+{%- if prev_item or next_item %}
+<nav class="pager" aria-label="Соседние выставки">
+  {% if prev_item %}
+  <a class="pager-link pager-prev" rel="prev" href="{{ prev_item.url | relative_url }}">
+    <span class="pager-heading"><span class="pager-arrow">{% include icon.html name="arrow-right" %}</span><span class="pager-label">Предыдущая статья</span></span>
+    <span class="pager-title">{{ prev_item.title | escape }}</span>
+    <span class="pager-meta"><span>Раздел «{{ page.letter | escape }}»</span><span>Кат. № {{ prev_item.order }}</span></span>
+  </a>
+  {% endif %}
+  {% if next_item %}
+  <a class="pager-link pager-next" rel="next" href="{{ next_item.url | relative_url }}">
+    <span class="pager-heading"><span class="pager-label">Следующая статья</span><span class="pager-arrow">{% include icon.html name="arrow-right" %}</span></span>
+    <span class="pager-title">{{ next_item.title | escape }}</span>
+    <span class="pager-meta"><span>Раздел «{{ page.letter | escape }}»</span><span>Кат. № {{ next_item.order }}</span></span>
+  </a>
+  {% endif %}
+</nav>
+{%- endif %}

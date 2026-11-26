@@ -199,10 +199,23 @@ ul>li>figure{margin:0}
 figure a{display:inline-block}
 article table{max-width:100%;border-collapse:collapse}
 article td,article th{padding:.5rem;border:1px solid var(--line);overflow-wrap:anywhere}
-.pager{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:2rem;font-size:14px}
-.pager>span{border:1px solid var(--line);border-radius:1rem;background:white;padding:1rem}
-.pager>span:empty{visibility:hidden}
-.pager>span:last-child{text-align:right}
+.pager{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.25rem;margin-top:2rem}
+.pager-link{position:relative;display:flex;flex-direction:column;min-width:0;padding:1.5rem;border:1px solid #ccb89a;border-radius:4px;background:linear-gradient(120deg,#fffdf7,#f1e6d3);color:var(--ink);box-shadow:0 3px 0 -1px #eee2cd,0 4px 0 #ccb89a,0 8px 20px #4935220a}
+.pager-link::before{content:'';position:absolute;inset:6px;border:1px solid #b99a6d33;pointer-events:none}
+.pager-heading{display:flex;align-items:center;justify-content:space-between;gap:.75rem;margin-bottom:1.1rem;color:var(--accent)}
+.pager-label{font:10px/1.6 var(--mono);letter-spacing:.08em;text-transform:uppercase}
+.pager-arrow{display:grid;place-items:center;flex:0 0 2.25rem;height:2.25rem;border:1px solid #b99a6d88;border-radius:50%;background:#fffdf580}
+.pager-prev .pager-arrow .icon{transform:rotate(180deg)}
+.pager-title{display:block;font:600 clamp(1.5rem,2.8vw,1.875rem)/1.15 var(--serif);overflow-wrap:anywhere;margin-bottom:1.5rem}
+.pager-meta{display:flex;flex-wrap:wrap;justify-content:space-between;gap:.25rem .75rem;margin-top:auto;padding-top:.85rem;border-top:1px dashed #b99a6d88;color:#786246;font:10px/1.6 var(--mono)}
+.pager-link:hover{border-color:#a47e4d;box-shadow:0 3px 0 -1px #eee2cd,0 4px 0 #b29168,0 10px 24px #4935221a}
+.pager-next{grid-column:2;background:linear-gradient(120deg,#87331f,#a4462d);border-color:#81301e;color:#fff6e8;box-shadow:0 3px 0 -1px #e7cdb6,0 4px 0 #81301e,0 8px 20px #71312314}
+.pager-next::before{border-color:#f3d5ab33}
+.pager-next .pager-heading,.pager-next .pager-meta{color:#f3d5b4}
+.pager-next .pager-arrow{border-color:#f3d5ab77;background:#fff3df0d;color:#fff6e8}
+.pager-next .pager-meta{border-color:#f3d5ab66}
+.pager-next:hover{background:linear-gradient(120deg,#78301f,#923a26);border-color:#713123;color:white;box-shadow:0 3px 0 -1px #e7cdb6,0 4px 0 #713123,0 10px 24px #71312326}
+@media(max-width:639px){.pager-next{grid-column:auto}.pager-link{padding:1.25rem}.pager-title{font-size:1.65rem}}
 footer.site{border-top:1px solid var(--line);background:white;color:var(--muted);font-size:12px;margin-top:3.5rem}
 footer.site .wrap{padding-top:2rem;padding-bottom:2rem}
 footer.site p+p{margin-top:.25rem}
