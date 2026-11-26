@@ -57,15 +57,6 @@ if (typeof document !== 'undefined') {
 // Alphabet links remain ordinary links. Hover never opens a preview or follows a link.
 document.querySelectorAll('[data-alphabet]').forEach((panel) => {
   const letters = [...panel.querySelectorAll('.letter-nav > li')];
-  panel.querySelectorAll('[data-alphabet-mode]').forEach((button) => {
-    button.addEventListener('click', () => {
-      panel.dataset.mode = button.dataset.alphabetMode;
-      letters.forEach((letter) => letter.style.removeProperty('transform'));
-      panel.querySelectorAll('[data-alphabet-mode]').forEach((mode) => {
-        mode.setAttribute('aria-pressed', String(mode === button));
-      });
-    });
-  });
   const toggle = panel.querySelector('[data-toggle-inactive]');
   toggle.addEventListener('click', () => {
     const hide = toggle.getAttribute('aria-pressed') !== 'true';
@@ -74,17 +65,6 @@ document.querySelectorAll('[data-alphabet]').forEach((panel) => {
     const activeCount = letters.filter((letter) => !letter.classList.contains('inactive-letter')).length;
     toggle.querySelector('span').textContent = hide ? `Только ${activeCount} активных` : `Все ${letters.length} буквы`;
   });
-  const dock = panel.querySelector('.letter-nav');
-  dock.addEventListener('pointermove', (event) => {
-    if (panel.dataset.mode !== 'magnetic' || event.pointerType === 'touch') return;
-    letters.forEach((letter) => {
-      const rect = letter.getBoundingClientRect();
-      const distance = Math.abs(event.clientX - rect.left - rect.width / 2);
-      const strength = distance < 135 ? (1 + Math.cos(Math.PI * distance / 135)) / 2 : 0;
-      letter.style.transform = `translateY(${-strength * 9}px) scale(${1 + strength * .36})`;
-    });
-  });
-  dock.addEventListener('pointerleave', () => letters.forEach((letter) => letter.style.removeProperty('transform')));
 });
 
 const dialog = document.querySelector('.search-dialog');

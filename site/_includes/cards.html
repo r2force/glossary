@@ -1,11 +1,12 @@
 <ul class="cards">
 {%- for item in include.items -%}
   {%- assign preview = item.content | replace: "</p>", "</p> " | replace: "</li>", "</li> " | replace: "</td>", "</td> " | strip_html | normalize_whitespace | strip | truncatewords: 20, "…" -%}
-  <li>
+  <li class="catalog-card">
     <div class="card-passport"><span class="card-letter">{{ item.letter }}</span><span class="catalog-meta">Кат. № {{ item.order }}</span>{% if item.content contains '<img' %}<span class="photo-badge">{% include icon.html name="camera" %} Фото</span>{% endif %}</div>
+    <span class="catalog-card-label">Книжные выставки · картотека</span>
     <h3><a href="{{ item.url | relative_url }}">{{ item.title | escape }}</a></h3>
     {%- if preview != "" %}<p>{{ preview | escape_once }}</p>{% endif %}
-    <a class="card-open" href="{{ item.url | relative_url }}">Открыть {% include icon.html name="arrow-up-right" %}</a>
+    <a class="card-open" href="{{ item.url | relative_url }}">Читать статью {% include icon.html name="arrow-up-right" %}</a>
   </li>
 {%- endfor -%}
 </ul>

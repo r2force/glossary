@@ -5,7 +5,19 @@ layout: default
   <div class="edition-labels"><span class="badge badge-red">{% include icon.html name="library" %} Справочное издание · 2-е переработанное</span><span class="badge">ЦГДБ г. Уфы</span></div>
   <h1>{{ site.title | escape }}</h1>
   <p class="lead">{{ site.subtitle | escape }}</p>
-  <a class="button button-primary" href="{{ '/contents/' | relative_url }}">Открыть полный указатель А–Я {% include icon.html name="arrow-right" %}</a>
+  <div class="home-discovery">
+    <a class="catalog-invitation" href="{{ '/contents/' | relative_url }}">
+      <span class="catalog-illustration">{% include catalog-illustration.html %}</span>
+      <span class="catalog-invitation-copy"><span class="invitation-eyebrow">Коллекция идей для вашей библиотеки</span><span class="invitation-title">Открыть полный<br>указатель <span class="invitation-alphabet">А–Я</span></span><span class="invitation-caption">Найдите свою следующую выставку</span></span>
+      <span class="invitation-arrow">{% include icon.html name="arrow-right" %}</span>
+    </a>
+    <div class="collection-counter">
+      <span class="counter-label">В коллекции сегодня</span>
+      <strong class="counter-value">{{ site.exhibitions.size }}</strong>
+      <span class="counter-caption">{% assign last_digit = site.exhibitions.size | modulo: 10 %}{% assign last_two = site.exhibitions.size | modulo: 100 %}{% if last_two >= 11 and last_two <= 14 %}статей{% elsif last_digit == 1 %}статья{% elsif last_digit >= 2 and last_digit <= 4 %}статьи{% else %}статей{% endif %} о книжных выставках</span>
+      <span class="counter-footnote">{% include icon.html name="library" %} От А до Я · {{ site.sections.size }} разделов</span>
+    </div>
+  </div>
   <div class="introduction-copy">
 {{ content }}
   </div>
