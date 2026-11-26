@@ -527,8 +527,8 @@
   "target_path": "exhibitions/zagadka/index.html",
   "url": "https://r2force.github.io/glossary/exhibitions/zagadka/",
   "images": [
-   "/images/stories/exhibition/zagadka/thumbs/60x60/zagadka1.jpg",
-   "/images/stories/exhibition/zagadka/thumbs/60x60/zagadka2.jpg"
+   "/images/stories/exhibition/zagadka/zagadka1.jpg",
+   "/images/stories/exhibition/zagadka/zagadka2.jpg"
   ]
  },
  {
@@ -1638,9 +1638,9 @@
   "target_path": "exhibitions/prazdnik/index.html",
   "url": "https://r2force.github.io/glossary/exhibitions/prazdnik/",
   "images": [
-   "/images/stories/exhibition/prazdnik/thumbs/60x60/prazdnik1.jpg",
-   "/images/stories/exhibition/prazdnik/thumbs/60x60/prazdnik2.jpg",
-   "/images/stories/exhibition/prazdnik/thumbs/60x60/prazdnik3.jpg"
+   "/images/stories/exhibition/prazdnik/prazdnik1.jpg",
+   "/images/stories/exhibition/prazdnik/prazdnik2.jpg",
+   "/images/stories/exhibition/prazdnik/prazdnik3.jpg"
   ]
  },
  {
@@ -2272,8 +2272,8 @@
   "target_path": "exhibitions/test/index.html",
   "url": "https://r2force.github.io/glossary/exhibitions/test/",
   "images": [
-   "/images/stories/exhibition/test/thumbs/60x60/test1.jpg",
-   "/images/stories/exhibition/test/thumbs/60x60/test2.jpg"
+   "/images/stories/exhibition/test/test1.jpg",
+   "/images/stories/exhibition/test/test2.jpg"
   ]
  },
  {
@@ -2426,12 +2426,12 @@
   "target_path": "exhibitions/horovod/index.html",
   "url": "https://r2force.github.io/glossary/exhibitions/horovod/",
   "images": [
-   "/images/stories/exhibition/horovod/thumbs/60x60/horovod1.jpg",
-   "/images/stories/exhibition/horovod/thumbs/60x60/horovod2.jpg",
-   "/images/stories/exhibition/horovod/thumbs/60x60/horovod3.jpg",
-   "/images/stories/exhibition/horovod/thumbs/60x60/horovod4.jpg",
-   "/images/stories/exhibition/horovod/thumbs/60x60/horovod5.jpg",
-   "/images/stories/exhibition/horovod/thumbs/60x60/horovod6.jpg"
+   "/images/stories/exhibition/horovod/horovod1.jpg",
+   "/images/stories/exhibition/horovod/horovod2.jpg",
+   "/images/stories/exhibition/horovod/horovod3.jpg",
+   "/images/stories/exhibition/horovod/horovod4.jpg",
+   "/images/stories/exhibition/horovod/horovod5.jpg",
+   "/images/stories/exhibition/horovod/horovod6.jpg"
   ]
  },
  {

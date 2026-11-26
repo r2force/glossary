@@ -66,16 +66,38 @@ def strip_noise(root: Tag) -> None:
         comment.extract()
 
 
+def full_size(src: str) -> str:
+    """Адрес полного изображения для миниатюры (thumbs/…, preview/…)."""
+    match = re.match(r"^(.*?)/(?:thumbs|preview)/[^/]+/([^/]+)$", src)
+    if match:
+        return f"{match.group(1)}/{match.group(2)}"
+    return src
+
+
 def render_img(tag: Tag) -> str:
     src = (tag.get("src") or tag.get("mce_src") or "").strip()
     if not src or src.startswith("data:"):
         return ""
+    linked = ""
+    parent = tag.parent
+    if isinstance(parent, Tag) and parent.name == "a":
+        candidate = (parent.get("href") or "").strip()
+        if candidate and full_size(src) == candidate:
+            linked = candidate
     alt = clean_text(tag.get("alt") or "")
-    return f'<img src="{escape(src)}" alt="{escape(alt)}">'
+    target = linked or full_size(src)
+    if target == src:
+        return f'<img src="{escape(src)}" alt="{escape(alt)}">'
+    return (f'<a href="{escape(target)}"><img src="{escape(src)}"'
+            f' alt="{escape(alt)}"></a>')
 
 
 def render_link(tag: Tag) -> str:
     href = (tag.get("href") or "").strip()
+    images = tag.find_all("img")
+    if images and not clean_text(tag.get_text(" ")):
+        # Ссылка вокруг иллюстрации: адрес уже учтён в render_img.
+        return "".join(render_img(img) for img in images)
     inner = serialize(tag, inline=True).strip()
     text = clean_text(tag.get_text(" "))
     if not inner and not text:
@@ -170,6 +192,11 @@ def images_in(node: Tag) -> list[str]:
         src = (img.get("src") or "").strip()
         if not src or src.startswith("data:") or src.startswith("file:"):
             continue
+        parent = img.parent
+        if isinstance(parent, Tag) and parent.name == "a":
+            candidate = (parent.get("href") or "").strip()
+            if candidate and full_size(src) == candidate:
+                src = candidate
         result.append(src)
     return result
 
