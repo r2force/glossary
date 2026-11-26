@@ -19,6 +19,8 @@
 <title>{{ page_title | escape_once }}</title>
 <meta name="description" content="{{ meta_desc | escape_once }}">
 <link rel="canonical" href="{{ page.url | absolute_url | escape }}">
+<link rel="icon" href="{{ '/favicon.ico' | relative_url }}" sizes="16x16 32x32 48x48 64x64">
+<link rel="icon" href="{{ '/favicon.svg' | relative_url }}" type="image/svg+xml" sizes="any">
 <meta property="og:type" content="article">
 <meta property="og:title" content="{{ page_title | escape_once }}">
 <meta property="og:description" content="{{ meta_desc | escape_once }}">

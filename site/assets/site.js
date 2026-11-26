@@ -54,6 +54,23 @@ if (typeof module !== 'undefined' && module.exports) {
 
 if (typeof document !== 'undefined') {
 
+// Keep the address out of static HTML and search text; reveal it on request.
+// This deters simple scrapers, but cannot stop bots that execute JavaScript.
+document.querySelectorAll('[data-email]').forEach((button) => {
+  button.hidden = false;
+  button.addEventListener('click', () => {
+    const address = atob(button.dataset.email);
+    const link = document.createElement('a');
+    link.className = button.className;
+    link.href = `mailto:${address}`;
+    const icon = button.querySelector('svg');
+    if (icon) link.append(icon);
+    link.append(document.createTextNode(address));
+    button.replaceWith(link);
+    link.focus();
+  }, {once: true});
+});
+
 // Alphabet links remain ordinary links. Hover never opens a preview or follows a link.
 document.querySelectorAll('[data-alphabet]').forEach((panel) => {
   const letters = [...panel.querySelectorAll('.letter-nav > li')];
