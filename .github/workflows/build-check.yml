@@ -47,8 +47,19 @@ jobs:
 
       - name: Confirm site has no LFS pointers
         run: |
-          if grep -rl "git-lfs.github.com/spec" site --include='*.jpg' --include='*.png' | head; then
-            echo "В site/ остались LFS-указатели — публикация остановлена" >&2
-            exit 1
-          fi
-          echo "Все иллюстрации — реальные файлы"
+          python - <<'PY'
+          import os, sys
+          bad = []
+          for dirpath, _, names in os.walk("site"):
+              for name in names:
+                  if not name.lower().endswith((".jpg", ".jpeg", ".png", ".gif")):
+                      continue
+                  path = os.path.join(dirpath, name)
+                  with open(path, "rb") as fh:
+                      if fh.read(40).startswith(b"version https://git-lfs"):
+                          bad.append(path)
+          if bad:
+              print("В site/ остались LFS-указатели:", *bad[:5], sep="\n  ")
+              sys.exit(1)
+          print("Все иллюстрации в site/ — реальные файлы")
+          PY
