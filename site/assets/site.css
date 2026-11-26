@@ -48,7 +48,5 @@ footer.site .wrap{padding:1.5rem 1.25rem}
 ul:has(> li > figure){display:flex;flex-wrap:wrap;gap:.75rem;padding:0;list-style:none}
 ul > li > figure{margin:0}
 figure a{display:inline-block}
-.note{border-left:3px solid var(--accent);padding:.25rem 0 .25rem 1rem;
- color:var(--muted);font-size:.92rem}
 .pager{display:flex;justify-content:space-between;gap:1rem;margin-top:2.5rem;
  border-top:1px solid var(--line);padding-top:1rem;font-size:.95rem}

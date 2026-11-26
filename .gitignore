@@ -1,3 +1,7 @@
 .idea
 /.tools/
 /.codebase-memory/
+
+# Сгенерированный байткод Python
+__pycache__/
+*.pyc

@@ -6,6 +6,7 @@
   * изображения: файл существует в site/, регистр совпадает, LFS не указатель;
   * ссылки: внутренние адреса существуют, пути относительные;
   * HTML и SEO: title, description, canonical, один h1, lang=ru;
+  * общие блоки из migration/templates/ и отсутствие легаси-разметки Word/Joomla;
   * sitemap.xml, robots.txt, 404.html;
   * повторяемость сборки (сравнение хешей при --repeat).
 
@@ -27,6 +28,8 @@ from collections import Counter
 
 from bs4 import BeautifulSoup
 
+from site_template import footer, header, letter_nav
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 REPO = os.path.dirname(ROOT)
 SITE = os.path.join(REPO, "site")
@@ -41,6 +44,23 @@ def normalize(text: str) -> str:
     return text.strip()
 
 
+LEGACY_TAGS = {
+    "font", "center", "big", "small", "strike", "s", "tt", "u", "b", "i",
+    "marquee", "blink", "dir", "menu", "acronym", "applet", "basefont",
+    "frame", "frameset", "noframes", "isindex", "o:p", "xml",
+}
+LEGACY_ATTRS = {
+    "style", "bgcolor", "align", "valign", "cellpadding", "cellspacing",
+    "border", "bordercolor", "color", "face", "size", "hspace", "vspace",
+    "nowrap", "background", "clear", "language", "mce_src", "mce_href",
+    "width", "height", "onclick", "onload", "onmouseover", "onerror",
+}
+WORD_MARKUP = re.compile(
+    r"mso-|Mso|class\s*=\s*[\"'][^\"']*Mso|<!--\s*\[if|<o:p|<w:|<v:|"
+    r"<\?xml|font-family", re.I
+)
+
+
 def page_files():
     found = []
     for dirpath, _, names in os.walk(SITE):
@@ -51,6 +71,75 @@ def page_files():
                 found.append(os.path.relpath(os.path.join(dirpath, name), SITE)
                              .replace(os.sep, "/"))
     return sorted(found)
+
+
+def all_html_files():
+    """Все HTML, включая каталоги изображений: легаси проверяем везде."""
+    found = []
+    for dirpath, _, names in os.walk(SITE):
+        for name in names:
+            if name.endswith(".html"):
+                found.append(os.path.relpath(os.path.join(dirpath, name), SITE)
+                             .replace(os.sep, "/"))
+    return sorted(found)
+
+
+def check_legacy_html(path: str) -> list[str]:
+    """Устаревшие теги, атрибуты оформления и стили Word/Joomla."""
+    problems = []
+    with open(os.path.join(SITE, path), encoding="utf-8") as fh:
+        text = fh.read()
+    if not text.lstrip().lower().startswith("<!doctype html>"):
+        problems.append(f"{path}: нет HTML5 <!DOCTYPE html>")
+    if WORD_MARKUP.search(text):
+        problems.append(f"{path}: осталась разметка Word/Joomla")
+    soup = BeautifulSoup(text, "html.parser")
+    for tag in soup.find_all(True):
+        name = tag.name.lower()
+        if name in LEGACY_TAGS or ":" in name:
+            problems.append(f"{path}: устаревший тег <{name}>")
+        for attr in tag.attrs:
+            low = attr.lower()
+            if (low in LEGACY_ATTRS or low.startswith("mso-")
+                    or low.startswith("on") or (low == "lang" and name != "html")):
+                problems.append(f"{path}: атрибут оформления {low}= у <{name}>")
+    if soup.find("style"):
+        problems.append(f"{path}: встроенные стили <style>")
+    return problems
+
+
+def normalized_markup(node) -> str:
+    """BeautifulSoup приводит атрибуты и отступы к одному виду по обе стороны."""
+    return BeautifulSoup(str(node), "html.parser").decode()
+
+
+def check_shared_blocks(path: str, soup, letter_path: dict[str, str],
+                        letter_by_slug: dict[str, str]) -> list[str]:
+    """Шапка, подвал и алфавит должны приходить из общих шаблонов."""
+    problems = []
+    head = soup.select_one("header.site")
+    if head is None or normalized_markup(head) != normalized_markup(header(path)):
+        problems.append(f"{path}: шапка не совпадает с общим шаблоном")
+    foot = soup.select_one("footer.site")
+    if foot is None or normalized_markup(foot) != normalized_markup(footer()):
+        problems.append(f"{path}: подвал не совпадает с общим шаблоном")
+    if len(soup.select("header.site")) != 1 or len(soup.select("footer.site")) != 1:
+        problems.append(f"{path}: общие блоки продублированы")
+
+    alphabet = soup.select("ul.letter-nav")
+    if len(alphabet) > 1:
+        problems.append(f"{path}: алфавитный указатель продублирован")
+    if alphabet and not (path in {"index.html", "contents/index.html"}
+                         or path.startswith("sections/")):
+        problems.append(f"{path}: алфавитный указатель на лишней странице")
+    if alphabet:
+        current = ""
+        if path.startswith("sections/"):
+            current = letter_by_slug.get(path.split("/")[1], "")
+        expected = letter_nav(path, letter_path, current)
+        if normalized_markup(alphabet[0]) != normalized_markup(expected):
+            problems.append(f"{path}: алфавит не совпадает с общим шаблоном")
+    return problems
 
 
 def main() -> int:
@@ -69,6 +158,17 @@ def main() -> int:
     pages = page_files()
     stats["html_pages"] = len(pages)
     page_set = set(pages)
+    letter_path = {
+        letter["title"]: f"sections/{translit(letter['title'])}/index.html"
+        for letter in registry["letters"]
+    }
+    letter_by_slug = {
+        translit(letter["title"]): letter["title"] for letter in registry["letters"]
+    }
+
+    # все HTML в site/, включая служебные файлы в каталогах изображений
+    for path in all_html_files():
+        errors.extend(check_legacy_html(path))
 
     def resolve_page(from_page: str, target: str) -> str | None:
         if not target or target.startswith(("http:", "https:", "mailto:", "#", "data:")):
@@ -92,6 +192,7 @@ def main() -> int:
             text = fh.read()
         soup = BeautifulSoup(text, "html.parser")
         stats["documents"] += 1
+        errors.extend(check_shared_blocks(page, soup, letter_path, letter_by_slug))
 
         if soup.html is None or (soup.html.get("lang") or "")[:2] != "ru":
             errors.append(f"{page}: нет <html lang=\"ru\">")
@@ -235,10 +336,6 @@ def main() -> int:
         errors.append("robots.txt: неверный адрес sitemap")
 
     # --- дубликаты title и canonical
-    for value, page in Counter(
-        open(os.path.join(SITE, p), encoding="utf-8").read().count("") for p in []
-    ).items():
-        pass
     seen_titles: dict[str, str] = {}
     for page in pages:
         with open(os.path.join(SITE, page), encoding="utf-8") as fh:
