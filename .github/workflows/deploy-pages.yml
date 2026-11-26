@@ -82,3 +82,79 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+  smoke:
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check published site over HTTPS
+        run: |
+          python3 - <<'PY'
+          import re, sys, time, urllib.request, urllib.error
+
+          BASE = "https://r2force.github.io/glossary"
+          IMAGE = "/images/stories/exhibition/horovod/horovod1.jpg"
+          THUMB = "/images/stories/exhibition/horovod/thumbs/60x60/horovod1.jpg"
+
+          checks = [
+              ("/", 200, "Книга"),
+              ("/introduction/index.html", 200, "ВВЕДЕНИЕ"),
+              ("/contents/index.html", 200, "Алфавитный указатель"),
+              ("/conclusion/index.html", 200, "Заключение"),
+              ("/sections/a/index.html", 200, "Раздел"),
+              ("/sections/p/index.html", 200, "Раздел"),
+              ("/sections/ya/index.html", 200, "Раздел"),
+              ("/exhibitions/akrostih/index.html", 200, "акростих"),
+              ("/exhibitions/horovod/index.html", 200, "хоровод"),
+              ("/exhibitions/yarmarka-literaturnaya/index.html", 200, "ярмарка"),
+              ("/assets/site.css", 200, "--accent"),
+          ]
+
+          def get(path, attempts=6):
+              last = None
+              for attempt in range(attempts):
+                  try:
+                      request = urllib.request.Request(
+                          BASE + path, headers={"User-Agent": "glossary-smoke/1.0"})
+                      with urllib.request.urlopen(request, timeout=30) as response:
+                          return response.status, response.read()
+                  except urllib.error.HTTPError as exc:
+                      return exc.code, exc.read()
+                  except Exception as exc:  # сеть/таймаут — повторяем
+                      last = exc
+                      time.sleep(10)
+              raise SystemExit(f"{path}: недоступен: {last!r}")
+
+          failures = []
+          for path, status, needle in checks:
+              try:
+                  got, body = get(path)
+              except SystemExit as exc:
+                  failures.append(str(exc))
+                  continue
+              text = body.decode("utf-8", "replace")
+              flag = "ok " if got == status and needle in text else "FAIL"
+              print(f"{flag} {got} {path}")
+              if got != status or needle not in text:
+                  failures.append(f"{path}: {got}, маркер найден: {needle in text}")
+
+          for path in (IMAGE, THUMB):
+              got, body = get(path)
+              is_jpeg = body[:2] == b"\xff\xd8"
+              print(f"{'ok ' if got == 200 and is_jpeg else 'FAIL'} {got} {path} "
+                    f"({len(body)} байт, jpeg={is_jpeg})")
+              if got != 200 or not is_jpeg or len(body) < 2000:
+                  failures.append(f"{path}: изображение не отдано как JPEG")
+
+          got, body = get("/this-page-does-not-exist-12345/")
+          text = body.decode("utf-8", "replace")
+          not_found = got == 404 and "Страница не найдена" in text
+          print(f"{'ok ' if not_found else 'FAIL'} {got} неизвестный адрес")
+          if not not_found:
+              failures.append(f"404: получен {got}")
+
+          if failures:
+              print("НЕУДАЧИ:", *failures, sep="\n  ")
+              sys.exit(1)
+          print("Все проверки опубликованного сайта пройдены")
+          PY
