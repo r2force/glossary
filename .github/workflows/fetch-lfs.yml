@@ -28,43 +28,14 @@ jobs:
       - name: Verify real image bytes
         run: python3 migration/tools/verify_media.py
 
-      - name: Store originals outside LFS for publishing
-        run: |
-          mkdir -p migration/media
-          python3 - <<'PY'
-          import hashlib, json, os, shutil
-          root = "site/images"
-          report = []
-          for dirpath, _, files in os.walk(root):
-              for name in sorted(files):
-                  if not name.lower().endswith((".jpg", ".jpeg", ".png", ".gif")):
-                      continue
-                  path = os.path.join(dirpath, name)
-                  with open(path, "rb") as fh:
-                      data = fh.read()
-                  rel = os.path.relpath(path, "site")
-                  target = os.path.join("migration/media", rel)
-                  os.makedirs(os.path.dirname(target), exist_ok=True)
-                  shutil.copyfile(path, target)
-                  report.append({
-                      "path": rel,
-                      "bytes": len(data),
-                      "sha256": hashlib.sha256(data).hexdigest(),
-                  })
-          with open("migration/media/files.json", "w", encoding="utf-8") as fh:
-              json.dump(report, fh, ensure_ascii=False, indent=1)
-          print("скопировано файлов:", len(report))
-          PY
-          du -sh migration/media
-
-      - name: Commit originals
+      - name: Commit media report
         run: |
           git config user.name "glossary-media"
           git config user.email "glossary-media@users.noreply.github.com"
-          git add -A migration/media
+          git add -A migration/build/media_report.json
           if git diff --cached --quiet; then
             echo "Нет изменений"
             exit 0
           fi
-          git commit -m "Получить оригиналы иллюстраций из Git LFS [skip ci]"
+          git commit -m "Зафиксировать проверку оригиналов иллюстраций [skip ci]"
           git push origin HEAD:arena/47e5cade-glossary
