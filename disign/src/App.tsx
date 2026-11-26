@@ -1123,14 +1123,14 @@ export function App() {
                     <div className="flex flex-wrap gap-4 pt-2 text-sm">
                       <div className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white border border-[#E2D9CC] text-[#1A1817]">
                         <MapPin className="w-4 h-4 text-[#9E3B24]" />
-                        <span>г. Уфа, 450078, ул. Мингажева, 109</span>
+                        <span>МБУ «Централизованная система детских библиотек» ГО г. Уфа РБ г. Уфа, 450078, ул. Мингажева, 109</span>
                       </div>
                       <a
-                        href="mailto:metodcsdb@gmail.com"
+                        href="mailto:ufacsdb@yandex.ru"
                         className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#9E3B24] text-white font-semibold no-underline hover:bg-[#B8462B] transition-colors"
                       >
                         <Mail className="w-4 h-4" />
-                        <span>metodcsdb@gmail.com</span>
+                        <span>ufacsdb@yandex.ru</span>
                       </a>
                     </div>
                   </div>
@@ -1147,7 +1147,7 @@ export function App() {
                   «Книга – Выставка – Читатель»: глоссарий нетрадиционных форм книжных выставок.
                 </p>
                 <p>
-                  Центральная городская детская библиотека г. Уфы · Материалы перенесены с сайта glossary.ufacsdb.ru с сохранением авторского текста.
+                  <a href="https://cgdb.ufacsdb.ru/" />МБУ «Централизованная система детских библиотек» ГО г. Уфа РБ
                 </p>
               </div>
               <div className="flex items-center gap-3">
