@@ -1,0 +1,517 @@
+[
+ {
+  "path": "images/logo/Book31.png",
+  "bytes": 50905,
+  "sha256": "75d757f8299a620fd81dcbed676ec9f2bee55bcae3e92d8bcf579a73900845c8"
+ },
+ {
+  "path": "images/stories/exhibition/авторская выставка.jpg",
+  "bytes": 133190,
+  "sha256": "ef1a449bb64be03ca3a5037cb6d9c9ea837fe42b9b1b1a68958e90bda181c8c5"
+ },
+ {
+  "path": "images/stories/exhibition/венок память1.jpg",
+  "bytes": 136538,
+  "sha256": "bd6df5675c22c00a83dfb24957c2fb3c3b5f55e8c6af34670cdec470a07350de"
+ },
+ {
+  "path": "images/stories/exhibition/венок память2.jpg",
+  "bytes": 87692,
+  "sha256": "4f4b8c4e62123fe256f66a6c87698cefaf4a157098295ac1b08f78966fdc98be"
+ },
+ {
+  "path": "images/stories/exhibition/выставка НЕОкниг.jpg",
+  "bytes": 91658,
+  "sha256": "bdca8c54ffb3facd3ecca082b97d13330175bdbb3161ac678d334d1c19a0dacc"
+ },
+ {
+  "path": "images/stories/exhibition/выставка адвайзер1.jpg",
+  "bytes": 157619,
+  "sha256": "5cb11c166fcba44b52346f5bbe27ccdb3277197440501e842d0397b869a2bf38"
+ },
+ {
+  "path": "images/stories/exhibition/выставка адвайзер2.jpg",
+  "bytes": 73020,
+  "sha256": "c457a32a5fd1021d5cff1372b8b6c219ccc86500f81a28bc9992044d1b500291"
+ },
+ {
+  "path": "images/stories/exhibition/выставка букроссинг.jpg",
+  "bytes": 79075,
+  "sha256": "a88a18573d57be027ae16a8e1ae2d9cb0fdfaa2791c9e8a5dc93ddbc44a5f836"
+ },
+ {
+  "path": "images/stories/exhibition/выставка викторина.jpg",
+  "bytes": 88430,
+  "sha256": "c40e8dea1edf73cd0041582e5d9dc4ff9a526de88aded5ba104eb50bab487db7"
+ },
+ {
+  "path": "images/stories/exhibition/выставка вопрос.jpg",
+  "bytes": 170936,
+  "sha256": "08b2bbc474e3b1e5d441ed0c7304694a96b87dd72b8f3ba08c0eaf4bc1e374d8"
+ },
+ {
+  "path": "images/stories/exhibition/выставка говорящая1.jpg",
+  "bytes": 79132,
+  "sha256": "3a538b1e26d19bb04e692209d8f003f67d386599c709065b9a605a4eb2502915"
+ },
+ {
+  "path": "images/stories/exhibition/выставка говорящая2.jpg",
+  "bytes": 128250,
+  "sha256": "5f2e55a4511ec6eba785b0108f0f46eeab7a5fecaa353c954616792fc15f1d35"
+ },
+ {
+  "path": "images/stories/exhibition/выставка декорация.jpg",
+  "bytes": 168959,
+  "sha256": "bf68e5748e83008cccfb6d9508719e0bddcf318ec8346b21770e4f206f61ace8"
+ },
+ {
+  "path": "images/stories/exhibition/выставка знакомство.jpg",
+  "bytes": 175472,
+  "sha256": "5759e9f306ae3d959b734c0d1f92319dc6ae64b62a9d01f227b510d4ff3ca4db"
+ },
+ {
+  "path": "images/stories/exhibition/выставка исповедь.jpg",
+  "bytes": 135493,
+  "sha256": "f9cfe0dcc7300665cf474821db08efa0cda4e874edce14843647d232abfe1d9d"
+ },
+ {
+  "path": "images/stories/exhibition/выставка книжно иллюстративная.jpg",
+  "bytes": 169384,
+  "sha256": "02af85242d77a8e5c1ab4f7218908cec137b27b90f4098ecc89dd12cb8b9f1a9"
+ },
+ {
+  "path": "images/stories/exhibition/выставка копилка.jpg",
+  "bytes": 92326,
+  "sha256": "7d9b2c7286064014101181a2f170435f759d182c3f081c66eb65334a792f05d5"
+ },
+ {
+  "path": "images/stories/exhibition/выставка крохотулька.jpg",
+  "bytes": 100152,
+  "sha256": "abeb91aa5083233830da6f154a437a6bf8809be6b2c2ea5e2a1feb910556820d"
+ },
+ {
+  "path": "images/stories/exhibition/выставка ликбез.jpg",
+  "bytes": 76283,
+  "sha256": "b2c50a08819ffeb19bfb79dff4752cc5b16c8121c7ab267f305f3f31384b9038"
+ },
+ {
+  "path": "images/stories/exhibition/выставка мастерилка.jpg",
+  "bytes": 92432,
+  "sha256": "b726f11a673067857fc368bb5cb9e768500428e7973887f21f9f229228a1023b"
+ },
+ {
+  "path": "images/stories/exhibition/выставка мастерская.jpg",
+  "bytes": 78858,
+  "sha256": "85e3284b0a22b1a530cafb3c622821d268d74a1d0ac5cd17e28484e631cb4d2a"
+ },
+ {
+  "path": "images/stories/exhibition/выставка мини музей.jpg",
+  "bytes": 137223,
+  "sha256": "f6d8a394ef23dbdd39a1a2fb788171b9a2568eb5bddcc9903ac6b399e976eb6b"
+ },
+ {
+  "path": "images/stories/exhibition/выставка музей.jpg",
+  "bytes": 113407,
+  "sha256": "dbe0853b826eb266969ccd951aeb6c706091028fbe0d416063bdc754e8f1b635"
+ },
+ {
+  "path": "images/stories/exhibition/выставка мультимедийная.jpg",
+  "bytes": 65038,
+  "sha256": "683ef62d067c5b3c2ed0563037037842c88adc0114134eccdde5737c68f9fc59"
+ },
+ {
+  "path": "images/stories/exhibition/выставка набат.jpg",
+  "bytes": 150131,
+  "sha256": "0fae023a9ae4cc220a459bcdc246d7e5151ebb8fa613c06384019bdbe719e9af"
+ },
+ {
+  "path": "images/stories/exhibition/выставка нетрадиционных носителей информации.jpg",
+  "bytes": 80457,
+  "sha256": "ac8df9ccf258d247d960d72df662004fa8eb287be4ab77662101508b55de90ce"
+ },
+ {
+  "path": "images/stories/exhibition/выставка новинка1.jpg",
+  "bytes": 86075,
+  "sha256": "242815e83fcb7c52f8a52ad7c354779b6feab11cf317978c3e0b53dbe9cbb858"
+ },
+ {
+  "path": "images/stories/exhibition/выставка новинка2.jpg",
+  "bytes": 83727,
+  "sha256": "cce6034f222e78d965d97108c2e473f7daa43754db1ae76ba7b3d19809f8e644"
+ },
+ {
+  "path": "images/stories/exhibition/выставка обратная связь.jpg",
+  "bytes": 151038,
+  "sha256": "f13e8885c2d28312388288f7371cb3170fbf5d9fc6f7fddc656cb5f21ffb1f3d"
+ },
+ {
+  "path": "images/stories/exhibition/выставка одного журнала.jpg",
+  "bytes": 91451,
+  "sha256": "37f55ea604981d66961e4c7271c5493a1cf38cbe3c16596890540f6904a9d5a5"
+ },
+ {
+  "path": "images/stories/exhibition/выставка оркестр.jpg",
+  "bytes": 90844,
+  "sha256": "959880e2b0c5c74e2a3ec87fb0ad6134a9ad9c0fa41ec15df3bbb9338ed67f3f"
+ },
+ {
+  "path": "images/stories/exhibition/выставка панорама.jpg",
+  "bytes": 146735,
+  "sha256": "c303375a2fad86640e35fc891257040d6e22d98078bb253231347f7e077dd312"
+ },
+ {
+  "path": "images/stories/exhibition/выставка персоналия.jpg",
+  "bytes": 120701,
+  "sha256": "b8472c81f038bf0df06e2deeeeca64e73a4000a0ddc2f0ec3cf0538ab05c9f8c"
+ },
+ {
+  "path": "images/stories/exhibition/выставка плакат1.jpg",
+  "bytes": 127738,
+  "sha256": "0767c7c78e6c71954eefd1ec44cb13606fe5d1e8361ae147bf90f81ea7a2d907"
+ },
+ {
+  "path": "images/stories/exhibition/выставка плакат2.jpg",
+  "bytes": 84609,
+  "sha256": "19ac37e0a7800c7e94e305b206f0833b9382f61aafb8cf2acdc9313df7fe6766"
+ },
+ {
+  "path": "images/stories/exhibition/выставка поделка.jpg",
+  "bytes": 199576,
+  "sha256": "ff249ad6350adf1a19fc5430284593a342935f08c7b643e8a437393f09d4c015"
+ },
+ {
+  "path": "images/stories/exhibition/выставка познание.jpg",
+  "bytes": 73382,
+  "sha256": "6613f2fa031102df56318a75ded848de5221696de060c307e1f936bcd8256ba0"
+ },
+ {
+  "path": "images/stories/exhibition/выставка полемика.jpg",
+  "bytes": 82198,
+  "sha256": "1964eef2d0cce57ca08169f6bdbbba9cf9c449861903406d33c220932ea079f5"
+ },
+ {
+  "path": "images/stories/exhibition/выставка портрет.jpg",
+  "bytes": 148503,
+  "sha256": "bbbeeb3118f07df77a50dd87e7b50038569bb7e1e6b61fe9f17aaa2ece99ca3e"
+ },
+ {
+  "path": "images/stories/exhibition/выставка предмет.jpg",
+  "bytes": 107705,
+  "sha256": "e85de7c33547963f341d7f581553799aec9f011d95819216da99ad505be29e47"
+ },
+ {
+  "path": "images/stories/exhibition/выставка предостережение.jpg",
+  "bytes": 100214,
+  "sha256": "e290132c35b7f9bd6ce6971f0f38e1b8635c29b96ea7381912ce87b4a78cf299"
+ },
+ {
+  "path": "images/stories/exhibition/выставка предупреждение.jpg",
+  "bytes": 91586,
+  "sha256": "7d0cae27358db3fa2099dae3cb0aa43a18a90242b3a97d3f8acfce5c007cb934"
+ },
+ {
+  "path": "images/stories/exhibition/выставка презентация.jpg",
+  "bytes": 120468,
+  "sha256": "bcf760cd403eb7ccc00e911c415b3e0fa05ff9deff3d4a5fbc8c4ae3f7a24f89"
+ },
+ {
+  "path": "images/stories/exhibition/выставка призыв.jpg",
+  "bytes": 174995,
+  "sha256": "069ff06561193484e9787fd86d8c6b1a12b1406c77182349a5562cc463b17612"
+ },
+ {
+  "path": "images/stories/exhibition/выставка проблема.jpg",
+  "bytes": 166890,
+  "sha256": "06c49222ad5345f45c215cbfa41b63fcfe9fbc50f846d48d2e50b14255221443"
+ },
+ {
+  "path": "images/stories/exhibition/выставка путешествие.jpg",
+  "bytes": 153784,
+  "sha256": "05e2c2b98dafac24d0ba28ffb3919d76de407975685ff775d74abde6d2c1a868"
+ },
+ {
+  "path": "images/stories/exhibition/выставка развал1.jpg",
+  "bytes": 202817,
+  "sha256": "2ec07fc24b816503675b192c83e05cd34a05c668e5879496e2beada92378b9d7"
+ },
+ {
+  "path": "images/stories/exhibition/выставка развал2.jpg",
+  "bytes": 135287,
+  "sha256": "e90a7e140047788503bae8568917312ad100124c9edbba6e55bfe46c64bf2461"
+ },
+ {
+  "path": "images/stories/exhibition/выставка развлечение.jpg",
+  "bytes": 134259,
+  "sha256": "cd352cb22e0afb2a7358341f51b7ba8b4c71ad7be7a99876d5b1a2f7f1bc44c2"
+ },
+ {
+  "path": "images/stories/exhibition/выставка размышление.jpg",
+  "bytes": 79358,
+  "sha256": "904c54d6a5a026d4a58f50b01ca9b4a3c969a478f0b44dba115fee747df5d78e"
+ },
+ {
+  "path": "images/stories/exhibition/выставка реконструкция.jpg",
+  "bytes": 113147,
+  "sha256": "1ee5df6baf2ab251ec390ae2f01214bc2e5c52df8c3c7ebdcc846b6db375c751"
+ },
+ {
+  "path": "images/stories/exhibition/выставка ретро.jpg",
+  "bytes": 131203,
+  "sha256": "cc8add2f5ba95ed4da4a74a1d10d03013abb3009e4b474442a986602537412e6"
+ },
+ {
+  "path": "images/stories/exhibition/выставка символ1.jpg",
+  "bytes": 167559,
+  "sha256": "c1975dfe8f33670fc5ab9b5277a9a6107e64d81b2832e2870eb33a7c5c0bfadf"
+ },
+ {
+  "path": "images/stories/exhibition/выставка символ2.jpg",
+  "bytes": 156842,
+  "sha256": "83a6cd7120d3a427844d4c94410f01843d293fa2b4438909369a0df8d17695b8"
+ },
+ {
+  "path": "images/stories/exhibition/выставка сказка.jpg",
+  "bytes": 86540,
+  "sha256": "e330c6bb3ece1ef440f17caa0a1ba7f001d1cafa06d394344a8e96bea80112f2"
+ },
+ {
+  "path": "images/stories/exhibition/выставка совет.jpg",
+  "bytes": 142169,
+  "sha256": "9dbe126e1d0843f1322f15ff237c2d92f23bc91d8c415b876e4c3bf38991f872"
+ },
+ {
+  "path": "images/stories/exhibition/выставка спасение.jpg",
+  "bytes": 100973,
+  "sha256": "1589f7e58f865fca2167f20d6df9ce0ffc1b52550610ecd439182e84ef485fea"
+ },
+ {
+  "path": "images/stories/exhibition/выставка творчество.jpg",
+  "bytes": 161522,
+  "sha256": "7b431105b0287d599ff383c2da62350d57d8693d05534d669bb4ac25b9518fba"
+ },
+ {
+  "path": "images/stories/exhibition/выставка толерантность.jpg",
+  "bytes": 83516,
+  "sha256": "db04b435c36582000c0c89e11f769f0a4318bdb368cd6281045793f444be8965"
+ },
+ {
+  "path": "images/stories/exhibition/выставка увлечение.jpg",
+  "bytes": 83118,
+  "sha256": "55193d0e81cf7a3c0844621fc6cb29002933e13255db020189814b8fd0f4c122"
+ },
+ {
+  "path": "images/stories/exhibition/выставка фольклор1.jpg",
+  "bytes": 130294,
+  "sha256": "0dbad4ee28f763f1562eb74e9038c4016b7d72d5294df3e79fe62e5c9502a96f"
+ },
+ {
+  "path": "images/stories/exhibition/выставка фольклор2.jpg",
+  "bytes": 150779,
+  "sha256": "2a22d036d81bd62ea425e202fcc410ee9b1b284a1d143f336c663f77f902cb84"
+ },
+ {
+  "path": "images/stories/exhibition/выставка эко.jpg",
+  "bytes": 129063,
+  "sha256": "4c3e7844f1e73280e23fed611486ea12229c289854ce6793a964f163c0f2e64f"
+ },
+ {
+  "path": "images/stories/exhibition/выставка юбилей.jpg",
+  "bytes": 67195,
+  "sha256": "c36b49618959a5618f38ab95463026621bcd739125865ef4c898e861bc143749"
+ },
+ {
+  "path": "images/stories/exhibition/zagadka/zagadka1.jpg",
+  "bytes": 106541,
+  "sha256": "8b364898bc3c667e8f5f05d941669c1111074765c23d54a9a5b1f177f01c6afb"
+ },
+ {
+  "path": "images/stories/exhibition/zagadka/zagadka2.jpg",
+  "bytes": 197832,
+  "sha256": "2ea594578635bc00b473e5f2943b62f172ee2f1f0ce0ff45e663c7e236c207d6"
+ },
+ {
+  "path": "images/stories/exhibition/zagadka/thumbs/60x60/zagadka1.jpg",
+  "bytes": 2458,
+  "sha256": "569598488cc7d7a84e9c08ae26f9df0c946ed0e9d915897ef214c97ec0af2dc0"
+ },
+ {
+  "path": "images/stories/exhibition/zagadka/thumbs/60x60/zagadka2.jpg",
+  "bytes": 2334,
+  "sha256": "83223c86816e2ab327e1794554e78df8b2206c29fb0a01dcdf4069eb82ed0e76"
+ },
+ {
+  "path": "images/stories/exhibition/zagadka/preview/200x200/zagadka1.jpg",
+  "bytes": 16224,
+  "sha256": "b7b2a53384247fddd8a470ebd71a5866eda9a9adf995f7bfaefcf7aad94da1e3"
+ },
+ {
+  "path": "images/stories/exhibition/zagadka/preview/200x200/zagadka2.jpg",
+  "bytes": 15172,
+  "sha256": "a78dd808122cc2e8de12a41877c4f6394ac83c5ed9a61d1f3451e0dfa6c6d1b9"
+ },
+ {
+  "path": "images/stories/exhibition/test/test1.jpg",
+  "bytes": 43191,
+  "sha256": "a2ce0f2c1a2b6a76d1f7648faf6b3510f0c8c56301d19b9c9e74788ba954bb0a"
+ },
+ {
+  "path": "images/stories/exhibition/test/test2.jpg",
+  "bytes": 149684,
+  "sha256": "b383dabe311e0204630379a08f8893dc438bbbe3a4cb7289708d8523e5b32695"
+ },
+ {
+  "path": "images/stories/exhibition/test/thumbs/60x60/test1.jpg",
+  "bytes": 1724,
+  "sha256": "24465975f4d760829ae976f7b70cbadc3af7b7d1c8a7c4b10cd30d616e5e4f46"
+ },
+ {
+  "path": "images/stories/exhibition/test/thumbs/60x60/test2.jpg",
+  "bytes": 2144,
+  "sha256": "b013bdf60e052acdd36f69547eb40e8f808a8eaad403a108fc4a8a97f84944df"
+ },
+ {
+  "path": "images/stories/exhibition/test/preview/200x200/test1.jpg",
+  "bytes": 8498,
+  "sha256": "97781193b5564b7b3a75baa0b8cefd57a70e4af2ff1c40c406c5fc60e9a8abf7"
+ },
+ {
+  "path": "images/stories/exhibition/test/preview/200x200/test2.jpg",
+  "bytes": 12004,
+  "sha256": "315080e1fa0861f6baac7255b1c692236d5006b0487e9c1997a2f659a6eb3eef"
+ },
+ {
+  "path": "images/stories/exhibition/prazdnik/prazdnik1.jpg",
+  "bytes": 113471,
+  "sha256": "a988c81b9a09d73eb6ac15f576913552a83c361f7fb68ebe7d2f0ec9edde1a0e"
+ },
+ {
+  "path": "images/stories/exhibition/prazdnik/prazdnik2.jpg",
+  "bytes": 63942,
+  "sha256": "45766704470addbd540b0c78cb4111602abddf7a30a0f65aae1cc8d0c11fd841"
+ },
+ {
+  "path": "images/stories/exhibition/prazdnik/prazdnik3.jpg",
+  "bytes": 64893,
+  "sha256": "6903f3dca3f456d677a62d1ece5e15d85f9bc9706d3f8ba5fc85f48b2e5b9bd0"
+ },
+ {
+  "path": "images/stories/exhibition/prazdnik/thumbs/60x60/prazdnik1.jpg",
+  "bytes": 2069,
+  "sha256": "c8a765768a8c1b6a6857104b94ced44d013fb8152de973dc6f1b9df1411675b6"
+ },
+ {
+  "path": "images/stories/exhibition/prazdnik/thumbs/60x60/prazdnik2.jpg",
+  "bytes": 1968,
+  "sha256": "4e24074a48758acc92518a26d596d1274d61b0642d4f79e69f87e35880884f6e"
+ },
+ {
+  "path": "images/stories/exhibition/prazdnik/thumbs/60x60/prazdnik3.jpg",
+  "bytes": 1831,
+  "sha256": "390446cbdbe02863080886c3198ed637bde9c1ce3233ff4a849deff252467092"
+ },
+ {
+  "path": "images/stories/exhibition/prazdnik/preview/200x200/prazdnik1.jpg",
+  "bytes": 11705,
+  "sha256": "e35ddcd3c724d7e3a201963bd4b3a5cc81c96b5b23d357a300946900cbcdb9cc"
+ },
+ {
+  "path": "images/stories/exhibition/prazdnik/preview/200x200/prazdnik2.jpg",
+  "bytes": 10321,
+  "sha256": "d21426e43cf2fda5d3dc9512d53099d8ee2b13e837a2c27fd3847c4bb0cb67f9"
+ },
+ {
+  "path": "images/stories/exhibition/prazdnik/preview/200x200/prazdnik3.jpg",
+  "bytes": 9483,
+  "sha256": "613a82998a8881bd083b368729164bda26aa5fbbc56df2ec1bef10b6f32eb7b7"
+ },
+ {
+  "path": "images/stories/exhibition/horovod/horovod1.jpg",
+  "bytes": 109803,
+  "sha256": "86c6a8a2b5940d7ae3e87e7bd2a1c4e809c355b3c08a5affb8edaf294c03ac21"
+ },
+ {
+  "path": "images/stories/exhibition/horovod/horovod2.jpg",
+  "bytes": 115894,
+  "sha256": "592d2dab62abcf6d266e9aba69a6ae48b8f3a5e353d050a8b2624758f8a49355"
+ },
+ {
+  "path": "images/stories/exhibition/horovod/horovod3.jpg",
+  "bytes": 112268,
+  "sha256": "8be76bc1cd082329f850f6d5a6698dd3b1e2fe4c3b4a8539c9d95248d6b8eaa6"
+ },
+ {
+  "path": "images/stories/exhibition/horovod/horovod4.jpg",
+  "bytes": 111853,
+  "sha256": "99768e3b4f2b593a3e4c3af0d557bc3d472e8835bba8a85690e66f1b03d7b4a5"
+ },
+ {
+  "path": "images/stories/exhibition/horovod/horovod5.jpg",
+  "bytes": 107167,
+  "sha256": "5cada566cd13e55611a7eec67640ef2a08c9af4720da2fc4c2d6299eb2396edf"
+ },
+ {
+  "path": "images/stories/exhibition/horovod/horovod6.jpg",
+  "bytes": 114491,
+  "sha256": "916839a6532eb3dd08c7407497ffb931cd4edeff15a69ae4043f6c128278544f"
+ },
+ {
+  "path": "images/stories/exhibition/horovod/thumbs/60x60/horovod1.jpg",
+  "bytes": 2359,
+  "sha256": "13731c98c0ea3667d1c13345f1da7dc544832e7809e0019563e1d7c80a6d7329"
+ },
+ {
+  "path": "images/stories/exhibition/horovod/thumbs/60x60/horovod2.jpg",
+  "bytes": 2289,
+  "sha256": "35e06c6fd6881601ba82ae5c5cb992e7da2cd9f7718a198d71167f2e73be29be"
+ },
+ {
+  "path": "images/stories/exhibition/horovod/thumbs/60x60/horovod3.jpg",
+  "bytes": 2427,
+  "sha256": "947c5721a99749e754b1025436887cc570cbadcf30f4a6cab5348e1b25e141e2"
+ },
+ {
+  "path": "images/stories/exhibition/horovod/thumbs/60x60/horovod4.jpg",
+  "bytes": 2402,
+  "sha256": "3eecce5e40a121831bbceca71006672e7e6d51b513017e442324cb856cbeb075"
+ },
+ {
+  "path": "images/stories/exhibition/horovod/thumbs/60x60/horovod5.jpg",
+  "bytes": 2304,
+  "sha256": "ff856f6be6a55a817a2b1de722d797e7718a80cea72de9b1490c602e77432d62"
+ },
+ {
+  "path": "images/stories/exhibition/horovod/thumbs/60x60/horovod6.jpg",
+  "bytes": 2294,
+  "sha256": "e0b99a4ef9555f14a9a746ac8e722a84e862732617f8a79de96b136ed8c44561"
+ },
+ {
+  "path": "images/stories/exhibition/horovod/preview/200x200/horovod1.jpg",
+  "bytes": 14409,
+  "sha256": "3028f1ea85e4c6cfa75464c0b5ab04523b62ef7b2b56266017af6e7231135982"
+ },
+ {
+  "path": "images/stories/exhibition/horovod/preview/200x200/horovod2.jpg",
+  "bytes": 13692,
+  "sha256": "5e4920722a49d90a0860bb5cb6da342f8d84ebeb726cf417daef15379ce26219"
+ },
+ {
+  "path": "images/stories/exhibition/horovod/preview/200x200/horovod3.jpg",
+  "bytes": 15100,
+  "sha256": "bc5f3fdf03abbb6aec86e9dadb478f15160a118aeed5c367f05d16361865648b"
+ },
+ {
+  "path": "images/stories/exhibition/horovod/preview/200x200/horovod4.jpg",
+  "bytes": 15324,
+  "sha256": "4367416fc7484dd82420f9d3e0de3adc52c213df52448aafde071897a4d46583"
+ },
+ {
+  "path": "images/stories/exhibition/horovod/preview/200x200/horovod5.jpg",
+  "bytes": 14214,
+  "sha256": "98e4b0a7c976c558de7f1b54c1c574db8faf85489116c26509d4c693ae662b22"
+ },
+ {
+  "path": "images/stories/exhibition/horovod/preview/200x200/horovod6.jpg",
+  "bytes": 14866,
+  "sha256": "b8407c34416c7429d5b4f39c5b488a5f27c6b548ae692e36c5c72fb9ba6374cd"
+ }
+]
