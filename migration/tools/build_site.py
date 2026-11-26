@@ -21,7 +21,7 @@ import unicodedata
 from datetime import date
 from urllib.parse import quote, unquote
 
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 REPO = os.path.dirname(ROOT)
@@ -203,6 +203,9 @@ article img{max-width:100%;height:auto;border:1px solid var(--line);
 footer.site{border-top:1px solid var(--line);background:#fff;color:var(--muted);
  font-size:.88rem}
 footer.site .wrap{padding:1.5rem 1.25rem}
+ul:has(> li > figure){display:flex;flex-wrap:wrap;gap:.75rem;padding:0;list-style:none}
+ul > li > figure{margin:0}
+figure a{display:inline-block}
 .note{border-left:3px solid var(--accent);padding:.25rem 0 .25rem 1rem;
  color:var(--muted);font-size:.92rem}
 .pager{display:flex;justify-content:space-between;gap:1rem;margin-top:2.5rem;
@@ -573,6 +576,11 @@ def rewrite_body(fragment: str, item: dict | None, media: Media,
 
     for img in root.find_all("img"):
         src = (img.get("src") or "").strip()
+        # Ссылка вокруг иллюстрации ведёт на полный оригинал.
+        full_src = ""
+        anchor = img.parent
+        if isinstance(anchor, Tag) and anchor.name == "a":
+            full_src = (anchor.get("href") or "").strip()
         resolved = media.resolve(src)
         if resolved is None:
             media.missing.append(
@@ -589,17 +597,31 @@ def rewrite_body(fragment: str, item: dict | None, media: Media,
                               safe="/:@?=&#%.+-_")
         new_img["alt"] = alt
         new_img["loading"] = "lazy"
-        figure.append(new_img)
-        parent = img.parent
-        img.replace_with(figure)
-        if parent is not None and parent.name == "p" and not parent.get_text(strip=True) \
-                and not parent.find(["a", "strong", "em", "b", "i"]):
-            parent.unwrap()
+        full = media.resolve(full_src) if full_src else None
+        if full and full != resolved:
+            media.used.add(full)
+            usage.append({"page": page, "image": full})
+            link = soup.new_tag("a")
+            link["href"] = quote(url_for(page, full.lstrip("/")),
+                                 safe="/:@?=&#%.+-_")
+            link.append(new_img)
+            figure.append(link)
+        else:
+            figure.append(new_img)
+        holder = anchor if isinstance(anchor, Tag) and anchor.name == "a" and \
+            not anchor.get_text(strip=True) else img
+        holder.replace_with(figure)
+        if not holder.get_text(strip=True) and holder.name == "p" \
+                and not holder.find(["a", "strong", "em", "b", "i"]):
+            holder.unwrap()
 
 
     for anchor in root.find_all("a"):
         href = (anchor.get("href") or "").strip()
         if href.startswith("mailto:") or href.startswith("#"):
+            continue
+        if anchor.find("img") or re.search(r"\.(jpe?g|png|gif)(\?|$)", href, re.I):
+            # Ссылка на иллюстрацию остаётся ссылкой на полный оригинал.
             continue
         if "glossary.ufacsdb.ru" in href or href.startswith("/index.php"):
             # Внутренние адреса Joomla: переносим как простой текст,

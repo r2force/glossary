@@ -148,6 +148,12 @@ def main() -> int:
             target = resolve_page(page, href)
             if target is None:
                 continue
+            if re.search(r"\.(jpe?g|png|gif|pdf|css|js|xml|txt)$", target, re.I):
+                if not os.path.isfile(os.path.join(SITE, target)):
+                    errors.append(f"{page}: битая ссылка на ресурс {href!r}")
+                else:
+                    stats["assets_linked"] += 1
+                continue
             if target == "" or target.endswith("/"):
                 target = (target + "index.html").lstrip("/")
             if target not in page_set:

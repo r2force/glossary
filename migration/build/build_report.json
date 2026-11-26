@@ -3,7 +3,7 @@
  "pages": 304,
  "exhibitions": 271,
  "letters": 25,
- "image_references": 76,
+ "image_references": 89,
  "images_missing": [],
  "images_non_lfs": [
   "/images/logo/Book31.png",
@@ -111,31 +111,18 @@
   "/images/stories/exhibition/выставка юбилей.jpg"
  ],
  "unused_images": [
-  "/images/stories/exhibition/horovod/horovod1.jpg",
-  "/images/stories/exhibition/horovod/horovod2.jpg",
-  "/images/stories/exhibition/horovod/horovod3.jpg",
-  "/images/stories/exhibition/horovod/horovod4.jpg",
-  "/images/stories/exhibition/horovod/horovod5.jpg",
-  "/images/stories/exhibition/horovod/horovod6.jpg",
   "/images/stories/exhibition/horovod/preview/200x200/horovod1.jpg",
   "/images/stories/exhibition/horovod/preview/200x200/horovod2.jpg",
   "/images/stories/exhibition/horovod/preview/200x200/horovod3.jpg",
   "/images/stories/exhibition/horovod/preview/200x200/horovod4.jpg",
   "/images/stories/exhibition/horovod/preview/200x200/horovod5.jpg",
   "/images/stories/exhibition/horovod/preview/200x200/horovod6.jpg",
-  "/images/stories/exhibition/prazdnik/prazdnik1.jpg",
-  "/images/stories/exhibition/prazdnik/prazdnik2.jpg",
-  "/images/stories/exhibition/prazdnik/prazdnik3.jpg",
   "/images/stories/exhibition/prazdnik/preview/200x200/prazdnik1.jpg",
   "/images/stories/exhibition/prazdnik/preview/200x200/prazdnik2.jpg",
   "/images/stories/exhibition/prazdnik/preview/200x200/prazdnik3.jpg",
   "/images/stories/exhibition/test/preview/200x200/test1.jpg",
   "/images/stories/exhibition/test/preview/200x200/test2.jpg",
-  "/images/stories/exhibition/test/test1.jpg",
-  "/images/stories/exhibition/test/test2.jpg",
   "/images/stories/exhibition/zagadka/preview/200x200/zagadka1.jpg",
-  "/images/stories/exhibition/zagadka/preview/200x200/zagadka2.jpg",
-  "/images/stories/exhibition/zagadka/zagadka1.jpg",
-  "/images/stories/exhibition/zagadka/zagadka2.jpg"
+  "/images/stories/exhibition/zagadka/preview/200x200/zagadka2.jpg"
  ]
 }
