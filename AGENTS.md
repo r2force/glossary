@@ -18,3 +18,21 @@
 ## Работа с материалами
 
 Для сбора источников и иллюстраций используй [glossary-source](.agents/skills/glossary-source/SKILL.md), для сборки, приёмки и релиза — [glossary-publish](.agents/skills/glossary-publish/SKILL.md). Только руководитель интегрирует результаты и отправляет коммиты по поручению пользователя. При передаче задачи указывай изменённые файлы, команду проверки и оставшиеся расхождения.
+
+## Текущее состояние переноса
+
+Материалы собраны, перенесены и опубликованы: **https://r2force.github.io/glossary/**.
+Итоговый отчёт — [migration/REPORT_FINAL.md](migration/REPORT_FINAL.md), инвентаризация —
+[migration/REPORT_INVENTORY.md](migration/REPORT_INVENTORY.md).
+
+| Шаг | Команда | Результат |
+| --- | --- | --- |
+| Сбор источника (нужен интернет) | `python migration/tools/harvest.py` | `migration/source/` |
+| Разбор в реестр | `python migration/tools/extract.py` | `migration/build/registry.json` |
+| Сборка сайта | `python migration/tools/build_site.py` | `site/` |
+| Проверка изображений (нужен `git lfs pull`) | `python migration/tools/verify_media.py` | `migration/build/media_report.json` |
+| Независимая проверка | `python migration/tools/verify_site.py --repeat` | `migration/build/verify_report.json` |
+
+Порядок работы с изменениями: править только `migration/` и `site/` через генератор,
+не редактировать готовые HTML вручную. Перед коммитом запускать проверку; публикация идёт
+из `main` через `.github/workflows/deploy-pages.yml` (задачи `build` → `deploy` → `smoke`).
