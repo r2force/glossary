@@ -1,0 +1,2 @@
+# Index project sources, not third-party libraries or migration evidence.
+package-lock.json
